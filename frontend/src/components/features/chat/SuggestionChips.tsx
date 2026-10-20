@@ -20,13 +20,13 @@ export function SuggestionChips({ onSelect }: SuggestionChipsProps) {
   );
 
   return (
-    <div className="flex flex-wrap gap-2 px-4 pb-3">
+    <div className="flex flex-wrap gap-2 px-4 pb-3" aria-label="Suggested candidate searches">
       {suggestions.map((suggestion) => (
         <button
           key={suggestion}
           type="button"
           onClick={() => onSelect(suggestion.replace(/ \([^)]*\)$/, ''))}
-          className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-slate-300 transition hover:border-indigo-400/20 hover:text-white"
+          className="suggestion-chip rounded-full px-2.5 py-1 text-xs transition"
         >
           {suggestion}
         </button>

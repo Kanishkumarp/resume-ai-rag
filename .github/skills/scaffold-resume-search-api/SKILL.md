@@ -1,8 +1,8 @@
 ---
-mode: agent
+name: scaffold-resume-search-api
 description: Scaffold an enterprise-grade TypeScript Express backend for the resume search API.
+disable-model-invocation: true
 ---
-
 Create the initial project scaffold for this resume search API based on the architecture document.
 
 Requirements:

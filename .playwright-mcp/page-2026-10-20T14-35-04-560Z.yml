@@ -1,0 +1,25 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - link "← Back to home" [ref=e6] [cursor=pointer]:
+      - /url: /
+    - heading "Resume ingestion" [level=1] [ref=e7]
+    - paragraph [ref=e8]: Upload a PDF resume to start the ingestion pipeline.
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - heading "Resume Ingestion" [level=2] [ref=e11]
+      - paragraph [ref=e12]: Upload a PDF resume and begin ingestion.
+    - generic [ref=e14] [cursor=pointer]:
+      - generic [ref=e15]: Drop PDF here or click to browse
+      - paragraph [ref=e16]: Only PDF files up to 5MB are supported.
+    - button "Upload Resume" [disabled] [ref=e18]
+    - generic [ref=e21]:
+      - generic [ref=e22]: Ready to upload your resume
+      - generic [ref=e23]: 0%
+    - generic [ref=e27]:
+      - generic [ref=e28]: Resume Upload
+      - generic [ref=e29]: PDF Processing
+      - generic [ref=e30]: Resume Parsing
+      - generic [ref=e31]: Embedding Generation
+      - generic [ref=e32]: MongoDB Ingestion
+      - generic [ref=e33]: Completed
+    - button "Reset" [ref=e35] [cursor=pointer]

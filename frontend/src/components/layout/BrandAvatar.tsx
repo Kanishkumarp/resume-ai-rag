@@ -1,17 +1,12 @@
-import { StatusDot } from './StatusDot';
-
 export function BrandAvatar() {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/70 p-3">
-      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-pink-500 shadow-lg shadow-indigo-950/40">
+    <div className="workspace-brand">
+      <div className="brand-mark" aria-hidden="true">
         <span className="text-lg font-semibold text-white">R</span>
       </div>
       <div>
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold text-white">RecruitBot</p>
-          <StatusDot />
-        </div>
-        <p className="text-xs text-slate-400">Online</p>
+        <p className="brand-title">Resume AI RAG</p>
+        <p className="brand-caption">Recruiter workspace</p>
       </div>
     </div>
   );

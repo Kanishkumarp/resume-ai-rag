@@ -1,36 +1,13 @@
-import { useMemo, useState } from 'react';
 import { CandidateSearchPanel } from '../../search/components/CandidateSearchPanel';
 import { RecruiterChatPanel } from '../../chat/components/RecruiterChatPanel';
 import { ResumeUploadCard } from '../../ingestion/components/ResumeUploadCard';
-import { CandidateDetailPanel } from '../../candidate/components/CandidateDetailPanel';
 import { Sidebar } from '../../layout/components/Sidebar';
 import { CandidateDetailModal } from '../../candidate/components/CandidateDetailModal';
 import { useCandidateModal } from '../../../hooks/use-candidate-modal';
 
-interface CandidateProfile {
-  id: string;
-  name: string;
-  title?: string;
-  score?: number;
-  source?: string;
-}
-
 export function RecruiterDashboard() {
-  const [candidate, setCandidate] = useState<CandidateProfile | null>(null);
-  const { candidate: selectedCandidate, open: isModalOpen, openModal, close } = useCandidateModal();
-
-  const handleUploadComplete = (fileName?: string) => {
-    const nextCandidate: CandidateProfile = {
-      id: `uploaded-${Date.now()}`,
-      name: fileName ? fileName.replace(/\.pdf$/i, '') : 'New candidate profile',
-      title: 'Recently ingested resume',
-      score: 0.91,
-      source: 'Resume ingestion',
-    };
-    setCandidate(nextCandidate);
-  };
-
-  const summary = useMemo(() => (candidate ? `Candidate ${candidate.name} is ready for review.` : 'Upload a resume to start the review workflow.'), [candidate]);
+  const { candidate: selectedCandidate, open: isModalOpen, openModal, close, error } = useCandidateModal();
+  const summary = 'Upload a resume to add it to the searchable library.';
 
   return (
     <div className="min-h-screen bg-[#050816] px-4 py-8 text-text-primary">
@@ -54,16 +31,13 @@ export function RecruiterDashboard() {
         <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
           <Sidebar />
           <div className="space-y-6">
-            <ResumeUploadCard onUpload={async (_file, fileName) => {
-              handleUploadComplete(fileName);
-            }} />
-            <CandidateDetailPanel candidate={candidate} />
+            <ResumeUploadCard />
             <CandidateSearchPanel />
-            <RecruiterChatPanel candidate={candidate} onOpenCandidate={openModal} />
+            <RecruiterChatPanel onOpenCandidate={openModal} />
           </div>
         </div>
       </div>
-      <CandidateDetailModal isOpen={isModalOpen} onClose={close} candidate={selectedCandidate ?? undefined} loading={false} />
+      <CandidateDetailModal isOpen={isModalOpen} onClose={close} candidate={selectedCandidate ?? undefined} loading={false} error={error} />
     </div>
   );
 }

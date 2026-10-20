@@ -6,7 +6,7 @@ interface CandidateResultCardProps {
   name: string;
   title?: string;
   score: number;
-  source: string;
+  source?: string;
   onSelect?: (id: string) => void;
   isSelected?: boolean;
   summary?: string;

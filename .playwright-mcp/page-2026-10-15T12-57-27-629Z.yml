@@ -1,0 +1,132 @@
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - generic [ref=e11]:
+      - text: Resume AI RAG
+      - generic [ref=e12]: AI-powered talent search
+    - generic "Breadcrumb" [ref=e13]:
+      - generic [ref=e14]: Workspace
+      - strong [ref=e17]: Candidate search
+      - generic [ref=e18]: K
+  - region [ref=e21]:
+    - generic [ref=e22]:
+      - paragraph [ref=e23]: SEARCH WORKSPACE
+      - heading "Find the right talent, faster." [level=1] [ref=e24]
+      - paragraph [ref=e25]: Search your resume library using natural language, keyword matching, or a blend of both.
+    - generic "Workspace statistics" [ref=e26]:
+      - article [ref=e27]:
+        - generic [ref=e33]:
+          - paragraph [ref=e34]: Resumes indexed
+          - paragraph [ref=e35]: "0"
+      - article [ref=e36]:
+        - generic [ref=e41]:
+          - paragraph [ref=e42]: Last ingestion
+          - paragraph [ref=e43]: No ingestion yet
+      - generic [ref=e44]: "Current search mode: Hybrid"
+  - generic [ref=e45]:
+    - complementary "Search settings" [ref=e46]:
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - generic [ref=e51]: R
+          - generic [ref=e52]:
+            - paragraph [ref=e53]: Resume AI RAG
+            - paragraph [ref=e54]: Recruiter workspace
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - heading "Add resumes" [level=2] [ref=e58]
+            - paragraph [ref=e59]: Upload PDF resumes to your library.
+          - generic [ref=e61] [cursor=pointer]:
+            - generic [ref=e62]: Drop PDF here or click to browse
+            - paragraph [ref=e63]: Only PDF files up to 5MB are supported.
+          - button "Upload Resume" [disabled] [ref=e65]
+          - generic [ref=e68]:
+            - generic [ref=e69]: Ready to upload your resume
+            - generic [ref=e70]: 0%
+          - generic [ref=e74]:
+            - generic [ref=e75]: Resume Upload
+            - generic [ref=e76]: PDF Processing
+            - generic [ref=e77]: Resume Parsing
+            - generic [ref=e78]: Embedding Generation
+            - generic [ref=e79]: MongoDB Ingestion
+            - generic [ref=e80]: Completed
+          - button "Reset" [ref=e82] [cursor=pointer]
+        - generic [ref=e83]:
+          - paragraph [ref=e84]: Search mode
+          - generic [ref=e85]:
+            - button "Vector Search Semantic similarity" [ref=e86] [cursor=pointer]:
+              - generic [ref=e87]: Vector Search
+              - paragraph [ref=e89]: Semantic similarity
+            - button "BM25 Keyword Exact term relevance" [ref=e90] [cursor=pointer]:
+              - generic [ref=e91]: BM25 Keyword
+              - paragraph [ref=e93]: Exact term relevance
+            - button "Hybrid Active Balanced ranking" [pressed] [ref=e94] [cursor=pointer]:
+              - generic [ref=e95]:
+                - generic [ref=e96]: Hybrid
+                - generic [ref=e97]: Active
+              - paragraph [ref=e98]: Balanced ranking
+        - generic [ref=e99]:
+          - generic [ref=e100]:
+            - paragraph [ref=e101]: Hybrid tuning
+            - generic [ref=e102]:
+              - button "balanced" [ref=e103] [cursor=pointer]
+              - button "bm25" [ref=e104] [cursor=pointer]
+              - button "vector" [ref=e105] [cursor=pointer]
+          - generic [ref=e106]:
+            - generic [ref=e107]:
+              - generic [ref=e108]: BM25
+              - generic [ref=e109]: 50%
+            - slider "BM25 50%" [ref=e110]: "50"
+          - generic [ref=e111]:
+            - generic [ref=e112]:
+              - generic [ref=e113]: Vector
+              - generic [ref=e114]: 50%
+            - slider "Vector 50%" [ref=e115]: "50"
+        - generic [ref=e116]:
+          - paragraph [ref=e117]: Results
+          - generic [ref=e119]:
+            - generic [ref=e120]: Results window
+            - combobox "Results window" [ref=e121]:
+              - option "3 results"
+              - option "5 results" [selected]
+              - option "10 results"
+              - option "20 results"
+        - generic [ref=e122]:
+          - generic [ref=e123]:
+            - paragraph [ref=e124]: Quick search check
+            - generic [ref=e125]: Hybrid
+          - textbox "Try a role or skill combination" [ref=e126]
+          - button "Check results" [ref=e127] [cursor=pointer]
+        - generic [ref=e128]:
+          - button "New search" [ref=e129] [cursor=pointer]
+          - button "Clear chat" [ref=e130] [cursor=pointer]
+        - generic [ref=e134]: Choose a retrieval mode and search across your indexed resumes.
+    - main [ref=e135]:
+      - region "AI resume search" [ref=e136]:
+        - generic [ref=e137]:
+          - generic [ref=e152]:
+            - paragraph [ref=e153]: AI resume search
+            - paragraph [ref=e154]: Hybrid search · Resume library
+          - generic [ref=e155]: Hybrid
+        - generic [ref=e158]:
+          - generic [ref=e159]:
+            - paragraph [ref=e160]: Tell us who you’re looking for.
+            - paragraph [ref=e161]: Describe the role, skills, or experience you need. Search through your indexed resumes and review candidates ranked by relevance.
+            - generic "Available search methods" [ref=e162]:
+              - generic [ref=e163]: Vector · semantic
+              - generic [ref=e172]: BM25 · keywords
+              - generic [ref=e176]: Hybrid · combined
+          - generic [ref=e180]:
+            - paragraph [ref=e181]: Start with a recruiter prompt
+            - paragraph [ref=e182]: Try a query such as backend engineer, product manager, or data engineer to retrieve ranked candidates.
+        - generic "Suggested candidate searches" [ref=e183]:
+          - button "Backend engineer with Python and AWS (hybrid)" [ref=e184] [cursor=pointer]
+          - button "Senior frontend engineer with React and TypeScript" [ref=e185] [cursor=pointer]
+          - button "Machine learning engineer with NLP experience" [ref=e186] [cursor=pointer]
+          - button "Lead QA engineer with Playwright and CI/CD" [ref=e187] [cursor=pointer]
+        - generic [ref=e188]:
+          - generic [ref=e189]:
+            - generic [ref=e190]: Describe the candidate you want to find
+            - textbox "Describe the candidate you want to find" [ref=e192]:
+              - /placeholder: e.g., Find Python developers with 3+ years of experience and FastAPI skills
+            - button "Search" [disabled] [ref=e193]
+          - paragraph [ref=e200]: Press Enter to search · Shift+Enter for a new line · Hybrid retrieval
+      - paragraph [ref=e201]: Search combines semantic understanding with your selected retrieval mode.

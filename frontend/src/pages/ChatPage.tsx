@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
+import { ChevronRight, Command, Menu, Search, X } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
 import { Sidebar } from '../components/layout/Sidebar';
 import { ChatMain } from '../components/features/chat/ChatMain';
-import { ResumeUploadCard } from '../features/ingestion/components/ResumeUploadCard';
 import { WorkspaceStatsBar } from '../components/common/WorkspaceStatsBar';
 import { CommandPalette } from '../components/common/CommandPalette';
 
 export function ChatPage() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -18,6 +19,7 @@ export function ChatPage() {
 
       if (event.key === 'Escape') {
         setCommandPaletteOpen(false);
+        setSidebarOpen(false);
       }
     };
 
@@ -27,39 +29,61 @@ export function ChatPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-1 flex-col gap-4 py-2">
-        <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4 shadow-2xl shadow-black/25">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <div className="mb-2 flex items-center gap-2 text-[11px] uppercase tracking-[0.35em] text-slate-500">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                Workspace / Search / RecruitBot
-              </div>
-              <h1 className="text-xl font-semibold text-white">RecruitBot workspace</h1>
-              <p className="mt-1 text-sm text-slate-400">Search uploaded resumes with BM25, vector, or hybrid retrieval.</p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <WorkspaceStatsBar />
-          </div>
+      <header className="workspace-header">
+        <div className="workspace-brand">
+          <span className="brand-mark" aria-hidden="true"><Search size={19} /></span>
+          <span>
+            <span className="brand-title">Resume AI RAG</span>
+            <span className="brand-caption block">AI-powered talent search</span>
+          </span>
         </div>
+        <div className="workspace-breadcrumb" aria-label="Breadcrumb">
+          <span>Workspace</span>
+          <ChevronRight size={14} />
+          <strong>Candidate search</strong>
+          <span className="ml-3 inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-500">
+            <Command size={12} /> K
+          </span>
+        </div>
+        <button
+          type="button"
+          className="mobile-menu-button"
+          aria-label={sidebarOpen ? 'Close search settings' : 'Open search settings'}
+          aria-expanded={sidebarOpen}
+          onClick={() => setSidebarOpen((open) => !open)}
+        >
+          {sidebarOpen ? <X size={19} /> : <Menu size={19} />}
+        </button>
+      </header>
 
-        <div className="flex flex-1 flex-col gap-4 lg:flex-row">
+      <section className="workspace-intro" aria-labelledby="page-title">
+        <div>
+          <p className="sidebar-section-label mb-2">SEARCH WORKSPACE</p>
+          <h1 id="page-title" className="workspace-heading">Find the right talent, faster.</h1>
+          <p className="workspace-description">
+            Search your resume library using natural language, keyword matching, or a blend of both.
+          </p>
+        </div>
+        <WorkspaceStatsBar />
+      </section>
+
+      <div className="workspace-layout">
+        <button
+          type="button"
+          aria-label="Close search settings"
+          className={`mobile-sidebar-backdrop${sidebarOpen ? ' is-open' : ''}`}
+          onClick={() => setSidebarOpen(false)}
+          tabIndex={sidebarOpen ? 0 : -1}
+        />
+        <aside className={`app-sidebar${sidebarOpen ? ' is-open' : ''}`} aria-label="Search settings">
           <Sidebar />
-          <div className="flex flex-1 flex-col gap-4">
-            <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4 shadow-2xl shadow-black/25">
-              <div className="mb-3">
-                <p className="text-sm font-semibold text-white">Resume intake</p>
-                <p className="text-sm text-slate-400">Upload a PDF resume directly from the main workspace.</p>
-              </div>
-              <div className="flex justify-center">
-                <ResumeUploadCard />
-              </div>
-            </div>
-
-            <ChatMain />
-          </div>
-        </div>
+        </aside>
+        <main className="workspace-main">
+          <ChatMain />
+          <p className="mt-3 text-center text-xs text-slate-400">
+            Search combines semantic understanding with your selected retrieval mode.
+          </p>
+        </main>
       </div>
       <CommandPalette open={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} />
     </AppShell>

@@ -23,14 +23,14 @@ export function getSearchEndpoint(mode: SearchMode): string {
   return '/v1/search/hybrid';
 }
 
-export async function searchResumes(request: SearchRequest): Promise<SearchResponse> {
+export async function searchResumes(request: SearchRequest, signal?: AbortSignal): Promise<SearchResponse> {
   const mode: SearchMode = request.mode ?? 'hybrid';
   const response = await apiClient.post<unknown>(getSearchEndpoint(mode), {
     query: request.query,
     topK: request.limit ?? 5,
     mode,
     weights: request.weights,
-  });
+  }, { signal });
 
   const payload = response.data as Record<string, unknown>;
   const results = normalizeResults(payload);

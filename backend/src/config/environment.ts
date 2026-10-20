@@ -1,9 +1,33 @@
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import * as dotenv from 'dotenv';
 
+const findDotEnvPath = (): string => {
+  const startDirs = [process.cwd(), __dirname];
+
+  for (const baseDir of startDirs) {
+    let currentDir = path.resolve(baseDir);
+
+    for (let depth = 0; depth < 10; depth += 1) {
+      const candidate = path.join(currentDir, '.env');
+      if (fs.existsSync(candidate)) {
+        return candidate;
+      }
+
+      const parentDir = path.dirname(currentDir);
+      if (parentDir === currentDir) {
+        break;
+      }
+      currentDir = parentDir;
+    }
+  }
+
+  return path.resolve(process.cwd(), '.env');
+};
+
 dotenv.config({
-  path: path.resolve(process.cwd(), '.env'),
-  override: true,
+  path: findDotEnvPath(),
+  override: false,
 });
 
 const getEnv = (key: string, fallback = ''): string => String(process.env[key] ?? fallback).trim();
@@ -16,6 +40,7 @@ const loadEnv = () => ({
   appName: getEnv('APP_NAME', 'resume-ai-rag'),
   appVersion: getEnv('APP_VERSION', '0.1.0'),
   mongoUri: getEnv('MONGODB_URI', '').trim(),
+  apiAccessToken: getEnv('API_ACCESS_TOKEN', ''),
   mongoDbName: getEnv('MONGODB_DB_NAME', '').trim(),
   mongoCollectionName: getEnv('MONGODB_COLLECTION_NAME', '').trim(),
   mongoBm25Index: getEnv('MONGODB_BM25_INDEX', '').trim(),

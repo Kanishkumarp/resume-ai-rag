@@ -1,18 +1,19 @@
 import { motion } from 'framer-motion';
+import { Blend, Brain, Search } from 'lucide-react';
 
 export function WelcomeMessage() {
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-indigo-400/20 bg-indigo-500/10 p-4 text-sm text-slate-200 shadow-lg shadow-black/10"
+      className="welcome-message"
     >
-      <p className="font-semibold text-white">Welcome to RecruitBot</p>
-      <p className="mt-2 text-slate-300">Search resumes by mode, review ranked matches, and use the chat to summarize or compare candidates.</p>
-      <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-300">
-        <span className="rounded-full bg-white/10 px-2.5 py-1">Vector • semantic similarity</span>
-        <span className="rounded-full bg-white/10 px-2.5 py-1">BM25 • keyword matching</span>
-        <span className="rounded-full bg-white/10 px-2.5 py-1">Hybrid • balanced ranking</span>
+      <p className="welcome-title">Tell us who you’re looking for.</p>
+      <p className="welcome-copy">Describe the role, skills, or experience you need. Search through your indexed resumes and review candidates ranked by relevance.</p>
+      <div className="welcome-tags" aria-label="Available search methods">
+        <span className="welcome-tag"><Brain size={12} /> Vector · semantic</span>
+        <span className="welcome-tag"><Search size={12} /> BM25 · keywords</span>
+        <span className="welcome-tag"><Blend size={12} /> Hybrid · combined</span>
       </div>
     </motion.div>
   );

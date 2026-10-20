@@ -1,3 +1,4 @@
+import { normalizeScores } from '../../utils/scoring';
 import { HybridSearchResponse, SearchCandidate } from '../../types/common';
 import { Bm25SearchService } from './bm25SearchService';
 import { VectorSearchService } from './vectorSearchService';
@@ -118,8 +119,8 @@ export class HybridSearchService {
 
     const bm25ReferenceScores = bm25Results.map((candidate) => this.extractBranchScore(candidate, 'bm25')).filter((score) => Number.isFinite(score));
     const vectorReferenceScores = vectorResults.map((candidate) => this.extractBranchScore(candidate, 'vector')).filter((score) => Number.isFinite(score));
-    const bm25Max = bm25ReferenceScores.length > 0 ? Math.max(...bm25ReferenceScores) : 1;
-    const vectorMax = vectorReferenceScores.length > 0 ? Math.max(...vectorReferenceScores) : 1;
+    const normalizedBm25Scores = normalizeScores(bm25ReferenceScores);
+    const normalizedVectorScores = normalizeScores(vectorReferenceScores);
 
     const merged = Array.from(byId.values())
       .filter((entry) => {
@@ -134,30 +135,30 @@ export class HybridSearchService {
         return true;
       })
       .map((entry) => {
-        const bm25Normalized = this.normalizeToComparableRange(entry.bm25Score, bm25Max);
-        const vectorNormalized = this.normalizeToComparableRange(entry.vectorScore, vectorMax);
+        const bm25Normalized = this.normalizeToComparableRange(entry.bm25Score, bm25ReferenceScores, normalizedBm25Scores);
+        const vectorNormalized = this.normalizeToComparableRange(entry.vectorScore, vectorReferenceScores, normalizedVectorScores);
         const hasBm25 = typeof entry.bm25Score === 'number' && Number.isFinite(entry.bm25Score) && entry.bm25Score > 0;
         const hasVector = typeof entry.vectorScore === 'number' && Number.isFinite(entry.vectorScore) && entry.vectorScore > 0;
 
         let hybridScore = 0;
         if (hasBm25 && hasVector) {
-          hybridScore = Number((
-            (bm25Weight * bm25Normalized) + (vectorWeight * vectorNormalized)
-          ).toFixed(3));
+          hybridScore = Number(((bm25Weight * bm25Normalized) + (vectorWeight * vectorNormalized)).toFixed(6));
         } else if (hasBm25) {
-          hybridScore = Number((bm25Weight * bm25Normalized).toFixed(3));
+          hybridScore = Number((bm25Weight * bm25Normalized).toFixed(6));
         } else if (hasVector) {
-          hybridScore = Number((vectorWeight * vectorNormalized).toFixed(3));
+          hybridScore = Number((vectorWeight * vectorNormalized).toFixed(6));
         }
+
+        const normalizedHybridScore = Number(Math.max(0, Math.min(1, hybridScore)).toFixed(6));
 
         return {
           ...entry,
-          score: hybridScore,
+          score: normalizedHybridScore,
           source: 'hybrid' as const,
           matchType: 'hybrid' as const,
-          bm25Score: Number(bm25Normalized.toFixed(3)),
-          vectorScore: Number(vectorNormalized.toFixed(3)),
-          hybridScore,
+          bm25Score: Number(bm25Normalized.toFixed(6)),
+          vectorScore: Number(vectorNormalized.toFixed(6)),
+          hybridScore: normalizedHybridScore,
         };
       });
 
@@ -198,15 +199,26 @@ export class HybridSearchService {
     return Math.max(0, Math.min(1, numericValue / 100));
   }
 
-  private normalizeToComparableRange(score: number | undefined, referenceMax: number): number {
+  private normalizeToComparableRange(
+    score: number | undefined,
+    originalScores: number[],
+    normalizedScores: number[],
+  ): number {
     if (typeof score !== 'number' || !Number.isFinite(score)) {
       return 0;
     }
 
-    if (referenceMax <= 0) {
+    const index = originalScores.indexOf(score);
+    if (index >= 0 && index < normalizedScores.length) {
+      return normalizedScores[index];
+    }
+
+    const min = Math.min(...originalScores);
+    const max = Math.max(...originalScores);
+    if (max === min) {
       return score > 0 ? 1 : 0;
     }
 
-    return Number(Math.max(0, Math.min(1, score / referenceMax)).toFixed(3));
+    return Number(Math.max(0, Math.min(1, (score - min) / (max - min))).toFixed(6));
   }
 }

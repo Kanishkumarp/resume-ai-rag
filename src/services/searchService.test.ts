@@ -19,6 +19,7 @@ test('hybrid search returns BM25 and vector result sets with fallback metadata',
   assert.equal(typeof result.timings.bm25Ms, 'number');
   assert.equal(typeof result.timings.vectorMs, 'number');
   assert.ok(result.bm25Results.length > 0 || result.vectorResults.length > 0, 'Expected at least one search result');
+  assert.ok(result.results.length <= 3, 'Expected hybrid results to respect topK');
   assert.ok(result.results.every((candidate) => candidate.score >= 0 && candidate.score <= 1), 'Hybrid scores should be normalized to a comparable range');
 });
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChatInputBar } from './ChatInputBar';
 import { ChatMessages } from './ChatMessages';
 import { ChatTopbar } from './ChatTopbar';
@@ -20,25 +20,37 @@ export function ChatMain() {
   const messages = useChatStore((state) => state.messages);
   const addUserMessage = useChatStore((state) => state.addUserMessage);
   const addBotMessage = useChatStore((state) => state.addBotMessage);
+  const replaceMessages = useChatStore((state) => state.replaceMessages);
   const setTyping = useChatStore((state) => state.setTyping);
-  const isTyping = useChatStore((state) => state.isTyping);
   const mode = useSearchStore((state) => state.mode);
   const limit = useSearchStore((state) => state.limit);
   const weights = useSearchStore((state) => state.weights);
-  const { candidate, open, openModal, close, loading } = useCandidateModal();
+  const { candidate, open, openModal, close, loading, error } = useCandidateModal();
+  const activeSearch = useRef<{ id: number; controller: AbortController } | null>(null);
+  const nextSearchId = useRef(0);
 
-  const canSubmit = draft.trim().length > 0 && !isTyping;
+  useEffect(() => () => activeSearch.current?.controller.abort(), []);
+
+  const canSubmit = draft.trim().length > 0;
 
   const sendMessage = async (content?: string) => {
     const trimmed = (content ?? draft).trim();
     if (!trimmed) return;
 
+    activeSearch.current?.controller.abort();
+    const search = {
+      id: ++nextSearchId.current,
+      controller: new AbortController(),
+    };
+    activeSearch.current = search;
+    replaceMessages([]);
     addUserMessage(trimmed);
     setDraft('');
     setTyping(true);
 
     try {
-      const response = await searchResumes({ query: trimmed, mode, limit, weights });
+      const response = await searchResumes({ query: trimmed, mode, limit, weights }, search.controller.signal);
+      if (activeSearch.current?.id !== search.id) return;
       const nextResults: SearchResult[] = response.results.slice(0, limit);
       const summaryText = response.message ?? (nextResults.length > 0 ? `Showing ${nextResults.length} ranked matches for “${trimmed}”.` : `No matches were found for “${trimmed}”.`);
 
@@ -65,19 +77,23 @@ export function ChatMain() {
         </div>,
       );
     } catch (error) {
+      if (activeSearch.current?.id !== search.id) return;
       addBotMessage(`The search service is unavailable right now. ${error instanceof Error ? error.message : 'Please check the backend connection.'}`);
     } finally {
-      setTyping(false);
+      if (activeSearch.current?.id === search.id) {
+        activeSearch.current = null;
+        setTyping(false);
+      }
     }
   };
 
   return (
-    <div className="flex min-h-[70vh] flex-1 flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70 shadow-2xl shadow-black/25">
+    <div className="flex min-h-[70vh] w-full max-w-5xl flex-1 flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70 shadow-2xl shadow-black/25">
       <ChatTopbar />
       <ChatMessages />
       {shouldShowSuggestionChips(messages) ? <SuggestionChips onSelect={(value) => void sendMessage(value)} /> : null}
       <ChatInputBar value={draft} onChange={setDraft} onSubmit={() => void sendMessage()} disabled={!canSubmit} />
-      <CandidateModal candidate={candidate} open={open} loading={loading} mode={mode} onClose={close} />
+      <CandidateModal candidate={candidate} open={open} loading={loading} error={error} mode={mode} onClose={close} />
     </div>
   );
 }

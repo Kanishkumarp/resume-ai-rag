@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { chatStore, type ChatMessage } from '../lib/stores/chat.store';
+import { chatStore } from '../lib/stores/chat.store';
+import type { ChatMessage } from '../types/chat.types';
 
 export function useChat() {
   const [messages, setMessages] = useState<ChatMessage[]>(() => chatStore.getMessages());

@@ -66,7 +66,7 @@ export class HybridSearchService {
       warnings.push('Both BM25 and vector searches returned no results; using demo fallback results.');
     }
 
-    const results = this.mergeResults(bm25Results, vectorResults, weights);
+    const results = this.mergeResults(bm25Results, vectorResults, weights, topK);
 
     return {
       query,
@@ -86,6 +86,7 @@ export class HybridSearchService {
     bm25Results: SearchCandidate[],
     vectorResults: SearchCandidate[],
     weights?: { bm25?: number; vector?: number },
+    topK = 50,
   ): SearchCandidate[] {
     const byId = new Map<string, WeightedCandidate>();
 
@@ -112,7 +113,7 @@ export class HybridSearchService {
 
     const bm25Weight = this.normalizeWeight(weights?.bm25, 50);
     const vectorWeight = this.normalizeWeight(weights?.vector, 50);
-    const topK = Math.max(1, Math.min(50, bm25Results.length + vectorResults.length));
+    const resultLimit = Math.max(0, Math.min(50, topK));
     const bm25OnlyMode = bm25Weight > 0 && vectorWeight === 0;
     const vectorOnlyMode = vectorWeight > 0 && bm25Weight === 0;
 
@@ -163,7 +164,7 @@ export class HybridSearchService {
 
     return merged
       .sort((left, right) => right.hybridScore - left.hybridScore)
-      .slice(0, topK)
+      .slice(0, resultLimit)
       .map((candidate, index) => ({ ...candidate, rank: index + 1 }));
   }
 

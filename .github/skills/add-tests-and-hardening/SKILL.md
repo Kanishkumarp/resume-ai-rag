@@ -1,8 +1,8 @@
 ---
-mode: agent
+name: add-tests-and-hardening
 description: Add tests and hardening for the resume search API.
+disable-model-invocation: true
 ---
-
 Improve the reliability of the resume search backend by adding tests and production hardening.
 
 Requirements:

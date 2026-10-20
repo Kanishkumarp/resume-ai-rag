@@ -1,8 +1,8 @@
 ---
-mode: agent
+name: implement-search-endpoint
 description: Implement a production-ready search endpoint for the resume search API.
+disable-model-invocation: true
 ---
-
 Implement the requested endpoint for the resume search backend while following the project architecture.
 
 Requirements:

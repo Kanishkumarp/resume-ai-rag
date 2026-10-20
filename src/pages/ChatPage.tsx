@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { AppShell } from '../components/layout/AppShell';
 import { Sidebar } from '../components/layout/Sidebar';
 import { ChatMain } from '../components/features/chat/ChatMain';
-import { ResumeUploadCard } from '../features/ingestion/components/ResumeUploadCard';
 import { WorkspaceStatsBar } from '../components/common/WorkspaceStatsBar';
 import { CommandPalette } from '../components/common/CommandPalette';
 
@@ -46,17 +45,7 @@ export function ChatPage() {
 
         <div className="flex flex-1 flex-col gap-4 lg:flex-row">
           <Sidebar />
-          <div className="flex flex-1 flex-col gap-4">
-            <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4 shadow-2xl shadow-black/25">
-              <div className="mb-3">
-                <p className="text-sm font-semibold text-white">Resume intake</p>
-                <p className="text-sm text-slate-400">Upload a PDF resume directly from the main workspace.</p>
-              </div>
-              <div className="flex justify-center">
-                <ResumeUploadCard />
-              </div>
-            </div>
-
+          <div className="flex min-w-0 flex-1 justify-center">
             <ChatMain />
           </div>
         </div>

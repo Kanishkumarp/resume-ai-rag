@@ -14,6 +14,7 @@ export type SearchResult = {
   id: string;
   name: string;
   title: string;
+  company?: string;
   score: number;
   summary: string;
   location?: string;

@@ -19,7 +19,7 @@ export function ChatMessages() {
   }, [messages, isTyping]);
 
   return (
-    <div ref={containerRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+    <div ref={containerRef} className="chat-messages space-y-4" aria-live="polite" aria-relevant="additions text">
       {messages.length === 0 ? (
         <div className="space-y-3">
           <WelcomeMessage />

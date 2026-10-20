@@ -1,6 +1,7 @@
 import { Toaster } from 'react-hot-toast';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ChatPage } from './pages/ChatPage';
+import { IngestionPage } from './features/ingestion/pages/IngestionPage';
 
 export function App() {
   return (
@@ -17,6 +18,8 @@ export function App() {
       />
       <Routes>
         <Route path="/" element={<ChatPage />} />
+        <Route path="/ingestion" element={<IngestionPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

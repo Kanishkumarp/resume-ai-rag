@@ -13,6 +13,7 @@ type BackendCandidate = {
   snippet?: string;
   summary?: string;
   content?: string;
+  text?: string;
   skills?: string[];
   location?: string;
   source?: string;
@@ -27,10 +28,10 @@ type BackendCandidate = {
 const normalizeSkill = (value: string) => value.trim().replace(/^[•·-]\s*/, '').replace(/\s+/g, ' ');
 
 export function extractCandidateMetadata(candidate: Partial<BackendCandidate>) {
-  const text = [candidate.summary, candidate.content, candidate.snippet].filter((value): value is string => typeof value === 'string' && value.trim().length > 0).join(' ');
+  const text = [candidate.summary, candidate.content, candidate.snippet, candidate.text].filter((value): value is string => typeof value === 'string' && value.trim().length > 0).join(' ');
   const emailMatch = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
   const phoneMatch = text.match(/(?:\+?\d[\d\s().-]{7,}\d)/);
-  const locationMatch = text.match(/(?:Chennai|Tamil Nadu|Remote|Hyderabad|Bengaluru|Bangalore|Pune|Mumbai|Delhi|Kolkata|Noida|Gurgaon|USA|India|US)/i);
+  const locationMatch = text.match(/\b(Chennai|Hyderabad|Bengaluru|Bangalore|Pune|Mumbai|Delhi|Kolkata|Noida|Gurgaon|USA|India|US)(?:,?\s*(Tamil Nadu|Karnataka|Maharashtra|West Bengal|Uttar Pradesh|Delhi|India|USA|US))?\b/i);
 
   const skillCandidates = [
     ...(Array.isArray(candidate.skills) ? candidate.skills : []),
@@ -48,7 +49,7 @@ export function extractCandidateMetadata(candidate: Partial<BackendCandidate>) {
   const uniqueSkills = Array.from(new Set(skillCandidates.map(normalizeSkill).filter(Boolean))).slice(0, 8);
 
   return {
-    email: candidate.email ?? candidate.phoneNumber ?? emailMatch?.[0] ?? undefined,
+    email: candidate.email ?? emailMatch?.[0] ?? undefined,
     phone: candidate.phone ?? candidate.phoneNumber ?? phoneMatch?.[0] ?? undefined,
     location: candidate.location ?? locationMatch?.[0] ?? undefined,
     skills: uniqueSkills,
@@ -57,16 +58,21 @@ export function extractCandidateMetadata(candidate: Partial<BackendCandidate>) {
 
 export const normalizeCandidate = (candidate: unknown): SearchResult => {
   const item = candidate as BackendCandidate;
+  const candidateId = item.id ?? item.candidateId ?? item.resumeId ?? item._id;
+  if (candidateId === undefined || candidateId === null || String(candidateId).trim().length === 0) {
+    throw new Error('Search result is missing a candidate ID.');
+  }
   const title = item.title ?? item.role ?? item.company ?? 'Candidate profile';
   const fallbackName = item.name ?? title;
   const metadata = extractCandidateMetadata(item);
 
   return {
-    id: item.id ?? item.candidateId ?? item.resumeId ?? item._id ?? `candidate-${Math.random().toString(36).slice(2, 8)}`,
+    id: String(candidateId),
     name: fallbackName,
     title,
+    company: typeof item.company === 'string' ? item.company : undefined,
     score: Number(item.score ?? 0),
-    summary: item.summary ?? item.content ?? item.snippet ?? 'Relevant candidate match from the search pipeline.',
+    summary: item.summary ?? item.content ?? item.snippet ?? item.text ?? '',
     location: metadata.location ?? item.location,
     skills: metadata.skills.length > 0 ? metadata.skills : (Array.isArray(item.skills) ? item.skills : []),
     source: item.source,

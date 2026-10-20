@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Clock3, UsersRound } from 'lucide-react';
 import { useSearchStore } from '../../lib/stores/search.store';
 import { getWorkspaceStats } from '../../lib/api/workspace.api';
 
@@ -51,21 +52,24 @@ export function WorkspaceStatsBar() {
   const modeLabel = mode === 'bm25' ? 'BM25' : mode === 'vector' ? 'Vector' : 'Hybrid';
 
   return (
-    <div className="console-card rounded-3xl border border-white/10 px-4 py-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="workspace-stats" aria-label="Workspace statistics">
+      <article className="stat-card">
+        <span className="stat-icon" aria-hidden="true"><UsersRound size={17} /></span>
         <div>
-          <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">Workspace overview</p>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-300">
-            <span className="rounded-full border border-white/10 bg-slate-950/60 px-2.5 py-1">{loading ? 'Loading…' : `${stats.totalCandidates} candidates`}</span>
-            <span className="rounded-full border border-white/10 bg-slate-950/60 px-2.5 py-1">Last ingest: {loading ? '—' : formatTimestamp(stats.lastIngestionAt)}</span>
-            <span className="rounded-full border border-indigo-400/20 bg-indigo-500/10 px-2.5 py-1 text-indigo-300">Mode: {modeLabel}</span>
-          </div>
+          <p className="stat-label">Resumes indexed</p>
+          <p className="stat-value" aria-live="polite">{loading ? 'Loading…' : stats.totalCandidates.toLocaleString()}</p>
         </div>
-        <div className="text-right text-xs text-slate-400">
-          <p>Live backend insight</p>
-          <p className="mt-1 text-[11px] uppercase tracking-[0.25em] text-slate-500">RecruitBot</p>
+      </article>
+      <article className="stat-card">
+        <span className="stat-icon" aria-hidden="true"><Clock3 size={17} /></span>
+        <div>
+          <p className="stat-label">Last ingestion</p>
+          <p className="stat-value" title={stats.lastIngestionAt ?? undefined}>
+            {loading ? 'Loading…' : formatTimestamp(stats.lastIngestionAt)}
+          </p>
         </div>
-      </div>
+      </article>
+      <span className="sr-only">Current search mode: {modeLabel}</span>
     </div>
   );
 }

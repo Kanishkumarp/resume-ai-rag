@@ -13,6 +13,7 @@ The app reads the following values from the local environment:
 
 - MongoDB connection: `MONGODB_URI`, `MONGODB_DB_NAME`,
   `MONGODB_COLLECTION_NAME`
+- Protected API routes: `API_ACCESS_TOKEN`
 - BM25 index: `MONGODB_BM25_INDEX`
 - Vector index: `MONGODB_VECTOR_INDEX`
 - Mistral embeddings: `MISTRAL_API_KEY`, `MISTRAL_EMBEDDING_MODEL`
@@ -79,6 +80,13 @@ The end-to-end search flow is:
 6. Optionally summarize the best matches.
 
 ## Resilience and Logging
+
+Search, candidate-profile, resume-ingestion, and embedding APIs require
+`Authorization: Bearer <API_ACCESS_TOKEN>`. The browser requests the token
+when an operator first uses a protected feature and keeps it in memory only.
+Health checks remain available without a token. Configure a long, unique
+random token of at least 32 characters in the server environment; do not
+place it in frontend build variables.
 
 The system should degrade gracefully:
 

@@ -78,6 +78,30 @@ export class ResumeRepository {
     return documents.filter((document) => this.matchesFilters(document, filters));
   }
 
+  async getDocumentById(candidateId: string): Promise<ResumeDocument | null> {
+    const trimmedId = candidateId?.trim() ?? '';
+    if (!trimmedId) {
+      return null;
+    }
+
+    const collection = await this.getCollection();
+    const queries: Record<string, unknown>[] = [{ resumeId: trimmedId }, { _id: trimmedId }];
+    if (ObjectId.isValid(trimmedId)) {
+      queries.unshift({ _id: new ObjectId(trimmedId) });
+    }
+
+    const document = await collection.findOne({ $or: queries } as Filter<Document>);
+    if (document) {
+      return this.normalizeDocument(document as ResumeDocument);
+    }
+
+    const fallbackDocument = this.getFallbackDocuments().find((item) =>
+      String(item._id) === trimmedId || String((item as ResumeDocument).resumeId) === trimmedId,
+    ) as ResumeDocument | undefined;
+
+    return fallbackDocument ? this.normalizeDocument(fallbackDocument) : null;
+  }
+
   async searchAtlasBm25(query: string, filters: Record<string, unknown> = {}, topK = 10): Promise<ResumeDocument[]> {
     const trimmedQuery = query?.trim() ?? '';
     if (!trimmedQuery) {
@@ -136,8 +160,32 @@ export class ResumeRepository {
     return {
       $expr: {
         $or: [
-          { $gte: [{ $toDouble: { $ifNull: ['$totalExperience', 0] } }, minYears] },
-          { $gte: [{ $toDouble: { $ifNull: ['$relevantExperience', 0] } }, minYears] },
+          {
+            $gte: [
+              {
+                $toDouble: {
+                  $ifNull: [
+                    '$total_Experience',
+                    { $ifNull: ['$totalExperience', 0] },
+                  ],
+                },
+              },
+              minYears,
+            ],
+          },
+          {
+            $gte: [
+              {
+                $toDouble: {
+                  $ifNull: [
+                    '$relevant_Experience',
+                    { $ifNull: ['$relevantExperience', 0] },
+                  ],
+                },
+              },
+              minYears,
+            ],
+          },
         ],
       },
     };

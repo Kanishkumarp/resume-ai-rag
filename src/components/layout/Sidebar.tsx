@@ -1,5 +1,6 @@
 import { useChatStore } from '../../lib/stores/chat.store';
 import { useSearchStore } from '../../lib/stores/search.store';
+import { ResumeUploadCard } from '../../features/ingestion/components/ResumeUploadCard';
 import { BrandAvatar } from './BrandAvatar';
 import { ClearChatButton } from './ClearChatButton';
 import { HybridWeightPanel } from './HybridWeightPanel';
@@ -17,7 +18,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="w-full shrink-0 rounded-3xl border border-white/10 bg-slate-900/75 p-4 shadow-2xl shadow-black/30 backdrop-blur xl:w-80 xl:sticky xl:top-4 xl:h-[calc(100vh-2rem)] xl:overflow-y-auto">
+    <aside className="w-full shrink-0 rounded-3xl border border-white/10 bg-slate-900/75 p-4 shadow-2xl shadow-black/30 backdrop-blur lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] lg:w-80 lg:overflow-y-auto">
       <div className="space-y-4">
         <BrandAvatar />
 
@@ -34,6 +35,10 @@ export function Sidebar() {
             <ResultsLimitSelect />
           </div>
         </div>
+
+        <section aria-label="Resume ingestion">
+          <ResumeUploadCard />
+        </section>
 
         <div className="flex gap-2">
           <button

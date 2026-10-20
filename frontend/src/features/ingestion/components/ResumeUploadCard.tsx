@@ -103,10 +103,10 @@ export function ResumeUploadCard({ onUpload }: ResumeUploadCardProps) {
   }, [error, status]);
 
   return (
-    <div className="w-full max-w-xl rounded-2xl border border-white/[0.07] bg-bg-card p-6 shadow-lg shadow-black/20">
-      <div className="mb-5">
-        <h2 className="text-lg font-semibold text-text-primary">Resume Ingestion</h2>
-        <p className="mt-1 text-sm text-text-muted">Upload a PDF resume and begin ingestion.</p>
+    <div className="resume-upload-panel w-full max-w-xl rounded-2xl border border-white/[0.07] bg-bg-card p-6 shadow-lg shadow-black/20">
+      <div className="mb-4">
+        <h2 className="text-sm font-semibold text-text-primary">Add resumes</h2>
+        <p className="mt-1 text-xs text-text-muted">Upload PDF resumes to your library.</p>
       </div>
 
       <UploadDropzone onFileSelect={handleFileSelect} isUploading={status === 'uploading'} error={error} status={status} />

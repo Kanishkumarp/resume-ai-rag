@@ -1,8 +1,8 @@
 ---
-mode: agent
+name: debug-resume-search-api
 description: Diagnose and fix issues in the resume search API.
+disable-model-invocation: true
 ---
-
 Investigate and fix the reported issue in this resume search project.
 
 Approach:

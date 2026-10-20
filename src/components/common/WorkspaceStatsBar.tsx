@@ -24,6 +24,7 @@ export function WorkspaceStatsBar() {
   const mode = useSearchStore((state) => state.mode);
   const [stats, setStats] = useState<WorkspaceStats>({ totalCandidates: 0, lastIngestionAt: null });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -34,6 +35,11 @@ export function WorkspaceStatsBar() {
         const nextStats = await getWorkspaceStats();
         if (active) {
           setStats(nextStats);
+          setError(null);
+        }
+      } catch (loadError) {
+        if (active) {
+          setError(loadError instanceof Error ? loadError.message : 'Workspace statistics could not be loaded.');
         }
       } finally {
         if (active) {
@@ -56,10 +62,11 @@ export function WorkspaceStatsBar() {
         <div>
           <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">Workspace overview</p>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-300">
-            <span className="rounded-full border border-white/10 bg-slate-950/60 px-2.5 py-1">{loading ? 'Loading…' : `${stats.totalCandidates} candidates`}</span>
-            <span className="rounded-full border border-white/10 bg-slate-950/60 px-2.5 py-1">Last ingest: {loading ? '—' : formatTimestamp(stats.lastIngestionAt)}</span>
+            <span className="rounded-full border border-white/10 bg-slate-950/60 px-2.5 py-1">{loading ? 'Loading…' : error ? 'Unavailable' : `${stats.totalCandidates} candidates`}</span>
+            <span className="rounded-full border border-white/10 bg-slate-950/60 px-2.5 py-1">Last ingest: {loading ? '—' : error ? 'Unavailable' : formatTimestamp(stats.lastIngestionAt)}</span>
             <span className="rounded-full border border-indigo-400/20 bg-indigo-500/10 px-2.5 py-1 text-indigo-300">Mode: {modeLabel}</span>
           </div>
+          {error ? <p role="alert" className="mt-2 text-xs text-rose-300">Workspace statistics unavailable: {error}</p> : null}
         </div>
         <div className="text-right text-xs text-slate-400">
           <p>Live backend insight</p>

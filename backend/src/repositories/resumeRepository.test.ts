@@ -25,8 +25,8 @@ test('searchAtlasBm25 applies experience filters inside the aggregation pipeline
     assert.deepEqual(matchStage?.$match, {
       $expr: {
         $or: [
-          { $gte: [{ $toDouble: '$total_Experience' }, 3] },
-          { $gte: [{ $toDouble: '$relevant_Experience' }, 3] },
+          { $gte: [{ $toDouble: { $ifNull: ['$totalExperience', 0] } }, 3] },
+          { $gte: [{ $toDouble: { $ifNull: ['$relevantExperience', 0] } }, 3] },
         ],
       },
     });

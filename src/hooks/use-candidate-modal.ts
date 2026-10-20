@@ -9,17 +9,21 @@ export function useCandidateModal() {
   const [candidate, setCandidate] = useState<CandidateProfile | null>(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const openModal = async (candidateId: string, result?: Partial<SearchResult> | null) => {
     uiStore.selectCandidate(candidateId);
     setSelectedCandidateId(candidateId);
     setCandidate(null);
+    setError(null);
     setLoading(true);
     setOpen(true);
 
     try {
       const nextCandidate = await getCandidateProfile(candidateId, result);
       setCandidate(nextCandidate);
+    } catch (profileError) {
+      setError(profileError instanceof Error ? profileError.message : 'Candidate profile could not be loaded.');
     } finally {
       setLoading(false);
     }
@@ -29,8 +33,9 @@ export function useCandidateModal() {
     uiStore.selectCandidate(null);
     setSelectedCandidateId(null);
     setCandidate(null);
+    setError(null);
     setOpen(false);
   };
 
-  return useMemo(() => ({ selectedCandidateId, candidate, open, loading, openModal, close }), [selectedCandidateId, candidate, open, loading]);
+  return useMemo(() => ({ selectedCandidateId, candidate, open, loading, error, openModal, close }), [selectedCandidateId, candidate, open, loading, error]);
 }

@@ -7,8 +7,19 @@
 :root {
   color-scheme: dark;
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: #050816;
-  color: #f3f6ff;
+  --dragon-background: #000000;
+  --dragon-background-secondary: #910000;
+  --dragon-text: #f2f2f2;
+  --dragon-red: #f82d2d;
+  --dragon-selection: #ff0000;
+  --dragon-orange: #f8762a;
+  --dragon-yellow: #ffc93b;
+  --dragon-green: #26f894;
+  --dragon-blue: #3394f6;
+  --dragon-purple: #6834f8;
+  --dragon-magenta: #f839b6;
+  background-color: var(--dragon-background);
+  color: var(--dragon-text);
 }
 
 * {
@@ -23,15 +34,15 @@ body,
   margin: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  background-color: #050816;
-  color: #f3f6ff;
+  background-color: var(--dragon-background);
+  color: var(--dragon-text);
 }
 
 body {
   min-height: 100vh;
-  background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.18), transparent 35%),
-    linear-gradient(135deg, #050816 0%, #0b1228 100%);
-  color: #f3f6ff;
+  background: radial-gradient(circle at top left, rgba(248, 45, 45, 0.22), transparent 35%),
+    linear-gradient(135deg, var(--dragon-background) 0%, var(--dragon-background-secondary) 100%);
+  color: var(--dragon-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -44,6 +55,60 @@ textarea {
 }
 
 ::selection {
-  background: rgba(244, 114, 182, 0.35);
+  background: rgba(255, 0, 0, 0.35);
   color: #fff;
+}
+
+.dragon-fire-shell {
+  background: radial-gradient(circle at top, rgba(248, 45, 45, 0.2), transparent 38%),
+    linear-gradient(135deg, var(--dragon-background) 0%, #210000 65%, var(--dragon-background-secondary) 100%);
+}
+
+.dragon-fire-shell .text-indigo-300,
+.dragon-fire-shell .text-indigo-400 {
+  color: var(--dragon-red);
+}
+
+.dragon-fire-shell .bg-indigo-500\/10,
+.dragon-fire-shell .bg-indigo-500\/15,
+.dragon-fire-shell .bg-indigo-500\/20 {
+  background-color: rgba(248, 45, 45, 0.14);
+}
+
+.dragon-fire-shell .bg-indigo-500 {
+  background-color: var(--dragon-red);
+}
+
+.dragon-fire-shell .border-indigo-400\/20,
+.dragon-fire-shell .border-indigo-400\/30 {
+  border-color: rgba(248, 45, 45, 0.45);
+}
+
+.dragon-fire-shell .text-emerald-300 {
+  color: var(--dragon-green);
+}
+
+.dragon-fire-shell .text-orange-300,
+.dragon-fire-shell .text-orange-400 {
+  color: var(--dragon-orange);
+}
+
+.dragon-fire-shell .text-amber-300,
+.dragon-fire-shell .text-yellow-300 {
+  color: var(--dragon-yellow);
+}
+
+.dragon-fire-shell .text-blue-300,
+.dragon-fire-shell .text-blue-400 {
+  color: var(--dragon-blue);
+}
+
+.dragon-fire-shell .text-purple-300,
+.dragon-fire-shell .text-purple-400 {
+  color: var(--dragon-purple);
+}
+
+.dragon-fire-shell .text-pink-300,
+.dragon-fire-shell .text-pink-400 {
+  color: var(--dragon-magenta);
 }

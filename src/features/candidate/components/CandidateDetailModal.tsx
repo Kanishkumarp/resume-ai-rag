@@ -8,6 +8,7 @@ interface CandidateDetailModalProps {
   onClose: () => void;
   candidate?: CandidateProfile | null;
   loading?: boolean;
+  error?: string | null;
 }
 
 function SectionHeader({ icon: Icon, title }: { icon: typeof BriefcaseBusiness; title: string }) {
@@ -21,7 +22,7 @@ function SectionHeader({ icon: Icon, title }: { icon: typeof BriefcaseBusiness; 
   );
 }
 
-export function CandidateDetailModal({ isOpen, onClose, candidate, loading = false }: CandidateDetailModalProps) {
+export function CandidateDetailModal({ isOpen, onClose, candidate, loading = false, error }: CandidateDetailModalProps) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -61,26 +62,10 @@ export function CandidateDetailModal({ isOpen, onClose, candidate, loading = fal
   }, [isOpen, onClose]);
 
   const profile = candidate ?? {
-    id: 'sample-candidate',
-    name: 'Sample Candidate',
-    title: 'Senior Backend Engineer',
-    company: 'Northwind Labs',
-    summary: 'Experienced in scalable backend systems, API integration, and full-stack delivery.',
-    skills: ['Node.js', 'TypeScript', 'MongoDB', 'AWS'],
-    email: 'candidate@example.com',
-    phone: '+1 (555) 010-0000',
-    location: 'Remote • United States',
-    experience: [
-      {
-        role: 'Senior Backend Engineer',
-        company: 'Northwind Labs',
-        duration: '2021 — Present',
-        description: 'Led API modernization and platform reliability efforts across a distributed Node.js service layer.',
-      },
-    ],
-    education: [{ degree: 'B.Sc. Computer Science', institution: 'University of Washington', year: '2018' }],
-    projects: [{ title: 'Resume Intelligence Platform', description: 'Built ingestion, search, and summarization workflows for recruiter-facing experiences.' }],
-    certifications: ['AWS Certified Developer', 'MongoDB Associate'],
+    id: '',
+    name: 'Candidate profile',
+    summary: error ?? 'The candidate record is unavailable.',
+    skills: [],
   };
 
   return (

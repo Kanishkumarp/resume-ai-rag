@@ -1,0 +1,133 @@
+- generic [ref=e5]:
+  - generic [ref=e6]:
+    - generic [ref=e8]:
+      - generic [ref=e9]: Workspace / Search / RecruitBot
+      - heading "RecruitBot workspace" [level=1] [ref=e11]
+      - paragraph [ref=e12]: Search uploaded resumes with BM25, vector, or hybrid retrieval.
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - paragraph [ref=e17]: Workspace overview
+        - generic [ref=e18]:
+          - generic [ref=e19]: Loading…
+          - generic [ref=e20]: "Last ingest: —"
+          - generic [ref=e21]: "Mode: Hybrid"
+      - generic [ref=e22]:
+        - paragraph [ref=e23]: Live backend insight
+        - paragraph [ref=e24]: RecruitBot
+  - generic [ref=e25]:
+    - complementary [ref=e26]:
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e29]: R
+          - generic [ref=e31]:
+            - paragraph [ref=e33]: RecruitBot
+            - paragraph [ref=e35]: Online
+        - link "Resume ingestion" [ref=e36] [cursor=pointer]:
+          - /url: /ingestion
+        - generic [ref=e37]:
+          - paragraph [ref=e38]: Search mode
+          - generic [ref=e39]:
+            - button "Vector Search Semantic similarity" [ref=e40] [cursor=pointer]:
+              - generic [ref=e42]: Vector Search
+              - paragraph [ref=e44]: Semantic similarity
+            - button "BM25 Keyword Exact term relevance" [ref=e45] [cursor=pointer]:
+              - generic [ref=e47]: BM25 Keyword
+              - paragraph [ref=e49]: Exact term relevance
+            - button "Hybrid Active Balanced ranking" [ref=e50] [cursor=pointer]:
+              - generic [ref=e52]:
+                - generic [ref=e53]: Hybrid
+                - generic [ref=e54]: Active
+              - paragraph [ref=e55]: Balanced ranking
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - paragraph [ref=e58]: Hybrid tuning
+            - generic [ref=e59]:
+              - button "balanced" [ref=e60] [cursor=pointer]
+              - button "bm25" [ref=e61] [cursor=pointer]
+              - button "vector" [ref=e62] [cursor=pointer]
+          - generic [ref=e63]:
+            - generic [ref=e64]:
+              - generic [ref=e65]: BM25
+              - generic [ref=e66]: 50%
+            - slider "BM25 50%" [ref=e67]: "50"
+          - generic [ref=e68]:
+            - generic [ref=e69]:
+              - generic [ref=e70]: Vector
+              - generic [ref=e71]: 50%
+            - slider "Vector 50%" [ref=e72]: "50"
+        - generic [ref=e73]:
+          - paragraph [ref=e74]: Results
+          - generic [ref=e76]:
+            - generic [ref=e77]: Results window
+            - combobox "Results window" [ref=e78]:
+              - option "3 results"
+              - option "5 results" [selected]
+              - option "10 results"
+              - option "20 results"
+        - generic [ref=e79]:
+          - button "Reset filters" [ref=e80] [cursor=pointer]
+          - button "Clear chat" [ref=e81] [cursor=pointer]
+        - generic [ref=e85]: Search pipeline ready for uploaded resumes and recruiter queries.
+    - generic [ref=e86]:
+      - generic [ref=e87]:
+        - generic [ref=e88]:
+          - paragraph [ref=e89]: Resume intake
+          - paragraph [ref=e90]: Upload a PDF resume directly from the main workspace.
+        - generic [ref=e92]:
+          - generic [ref=e93]:
+            - heading "Resume Ingestion" [level=2] [ref=e94]
+            - paragraph [ref=e95]: Upload a PDF resume and begin ingestion.
+          - generic [ref=e97] [cursor=pointer]:
+            - generic [ref=e98]: Drop PDF here or click to browse
+            - paragraph [ref=e99]: Only PDF files up to 5MB are supported.
+          - button "Upload Resume" [disabled] [ref=e101]
+          - generic [ref=e104]:
+            - generic [ref=e105]: Ready to upload your resume
+            - generic [ref=e106]: 0%
+          - generic [ref=e110]:
+            - generic [ref=e111]: Resume Upload
+            - generic [ref=e112]: PDF Processing
+            - generic [ref=e113]: Resume Parsing
+            - generic [ref=e114]: Embedding Generation
+            - generic [ref=e115]: MongoDB Ingestion
+            - generic [ref=e116]: Completed
+          - button "Reset" [ref=e118] [cursor=pointer]
+      - generic [ref=e119]:
+        - generic [ref=e120]:
+          - generic [ref=e121]:
+            - generic [ref=e122]: R
+            - generic [ref=e123]:
+              - paragraph [ref=e124]: RecruitBot assistant
+              - paragraph [ref=e125]: Hybrid • Balanced ranking
+          - generic [ref=e126]:
+            - generic [ref=e127]: Workspace
+            - generic [ref=e128]: /
+            - generic [ref=e129]: Search
+            - generic [ref=e130]: /
+            - generic [ref=e131]: Hybrid
+          - generic [ref=e132]: Hybrid
+        - generic [ref=e134]:
+          - generic [ref=e135]:
+            - paragraph [ref=e136]: Welcome to RecruitBot
+            - paragraph [ref=e137]: Search resumes by mode, review ranked matches, and use the chat to summarize or compare candidates.
+            - generic [ref=e138]:
+              - generic [ref=e139]: Vector • semantic similarity
+              - generic [ref=e140]: BM25 • keyword matching
+              - generic [ref=e141]: Hybrid • balanced ranking
+          - generic [ref=e142]:
+            - paragraph [ref=e143]: Start with a recruiter prompt
+            - paragraph [ref=e144]: Try a query such as backend engineer, product manager, or data engineer to retrieve ranked candidates.
+        - generic [ref=e145]:
+          - button "Backend engineer with Python and AWS (hybrid)" [ref=e146] [cursor=pointer]
+          - button "Senior frontend engineer with React and TypeScript" [ref=e147] [cursor=pointer]
+          - button "Machine learning engineer with NLP experience" [ref=e148] [cursor=pointer]
+          - button "Lead QA engineer with Playwright and CI/CD" [ref=e149] [cursor=pointer]
+        - generic [ref=e150]:
+          - generic [ref=e151]:
+            - generic [ref=e152]:
+              - generic [ref=e153]:
+                - generic [ref=e154]: Recruit query
+                - generic [ref=e155]: Hybrid
+              - 'textbox "Try: backend engineer with Python and AWS" [ref=e156]'
+            - button "Search" [disabled] [ref=e157]
+          - paragraph [ref=e158]: Press Enter to run a search • Shift+Enter for a new line

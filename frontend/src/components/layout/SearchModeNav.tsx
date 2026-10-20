@@ -16,21 +16,20 @@ export function SearchModeNav({ activeMode, onChange }: SearchModeNavProps) {
     <div className="space-y-2">
       {options.map((option) => {
         const active = option.value === activeMode;
-        const accent = option.value === 'bm25' ? 'from-pink-500/20 to-transparent' : option.value === 'vector' ? 'from-indigo-500/20 to-transparent' : 'from-emerald-500/20 to-transparent';
 
         return (
           <button
             key={option.value}
             type="button"
             onClick={() => onChange(option.value)}
-            className={`relative w-full overflow-hidden rounded-2xl border p-3 text-left transition ${active ? 'border-indigo-400/40 bg-indigo-500/10 text-white' : 'border-white/10 bg-slate-950/70 text-slate-300 hover:border-indigo-400/20 hover:text-white'}`}
+            aria-pressed={active}
+            className={`search-mode-option ${active ? 'is-active' : ''}`}
           >
-            <div className={`absolute inset-0 bg-gradient-to-r ${accent}`} />
-            <div className="relative flex items-center justify-between">
-              <span className="text-sm font-semibold">{option.label}</span>
-              {active ? <span className="text-xs text-indigo-300">Active</span> : null}
+            <div className="search-mode-title">
+              <span>{option.label}</span>
+              {active ? <span className="search-mode-active">Active</span> : null}
             </div>
-            <p className="relative mt-1 text-xs text-slate-400">{option.description}</p>
+            <p className="search-mode-description">{option.description}</p>
           </button>
         );
       })}

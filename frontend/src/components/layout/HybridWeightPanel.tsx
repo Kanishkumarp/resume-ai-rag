@@ -15,7 +15,7 @@ export function HybridWeightPanel() {
       >
         <div className="mb-3 flex items-center justify-between">
           <p className="text-sm font-semibold text-white">Hybrid tuning</p>
-          <div className="flex gap-2">
+          <div className="hybrid-presets flex gap-2">
             {['balanced', 'bm25', 'vector'].map((preset) => (
               <button
                 key={preset}

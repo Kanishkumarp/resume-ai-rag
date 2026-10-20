@@ -79,7 +79,7 @@ export class SearchService {
       warnings.push('Vector search failed.');
     }
 
-    const merged = this.hybridService['mergeResults'](bm25Results, vectorResults, options.weights);
+    const merged = this.hybridService['mergeResults'](bm25Results, vectorResults, options.weights, topK);
 
     let results = merged;
     let rerankApplied = false;

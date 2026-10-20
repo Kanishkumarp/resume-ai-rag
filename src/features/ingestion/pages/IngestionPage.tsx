@@ -3,7 +3,7 @@ import { ResumeUploadCard } from '../components/ResumeUploadCard';
 
 export function IngestionPage() {
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-8 text-slate-100 sm:px-6 lg:px-8">
+    <div className="dragon-fire-shell min-h-screen px-4 py-8 text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-6">
         <div className="w-full max-w-xl text-center">
           <Link to="/" className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-slate-300 transition hover:border-indigo-400/30 hover:text-white">

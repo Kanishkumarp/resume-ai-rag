@@ -69,7 +69,7 @@ router.get('/health/db', async (_req, res) => {
   }
 });
 
-router.get('/health/workspace', async (_req, res) => {
+router.get('/health/workspace', async (_req, res, next) => {
   try {
     const collection = await mongoConnection.getCollection();
     const [totalCandidates, latestDocument] = await Promise.all([
@@ -81,11 +81,8 @@ router.get('/health/workspace', async (_req, res) => {
       totalCandidates,
       lastIngestionAt: latestDocument?.createdAt ?? null,
     });
-  } catch {
-    res.status(200).json({
-      totalCandidates: 0,
-      lastIngestionAt: null,
-    });
+  } catch (error) {
+    next(error);
   }
 });
 

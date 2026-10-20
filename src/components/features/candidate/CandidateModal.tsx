@@ -9,11 +9,12 @@ interface CandidateModalProps {
   candidate?: CandidateProfile | null;
   open?: boolean;
   loading?: boolean;
+  error?: string | null;
   mode?: SearchMode;
   onClose?: () => void;
 }
 
-type ModalCandidate = CandidateProfile & { bm25Score?: number; vectorScore?: number; hybridScore?: number };
+type ModalCandidate = CandidateProfile & { score: number; bm25Score?: number; vectorScore?: number; hybridScore?: number };
 
 function SectionHeader({ icon: Icon, title }: { icon: typeof BriefcaseBusiness; title: string }) {
   return (
@@ -26,7 +27,7 @@ function SectionHeader({ icon: Icon, title }: { icon: typeof BriefcaseBusiness; 
   );
 }
 
-export function CandidateModal({ candidate, open = false, loading = false, mode, onClose }: CandidateModalProps) {
+export function CandidateModal({ candidate, open = false, loading = false, error, mode, onClose }: CandidateModalProps) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const activeMode = useSearchStore((state) => state.mode);
 
@@ -50,11 +51,21 @@ export function CandidateModal({ candidate, open = false, loading = false, mode,
     return null;
   }
 
-  if (!open) {
-    return null;
-  }
-
   if (loading || !candidate) {
+    if (error) {
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-3 py-3 sm:px-4" onClick={onClose}>
+          <div role="dialog" aria-modal="true" className="w-full max-w-lg rounded-3xl border border-white/10 bg-slate-900 p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <h2 className="text-lg font-semibold text-white">Candidate profile unavailable</h2>
+            <p role="alert" className="mt-3 text-sm text-slate-300">{error}</p>
+            <button type="button" onClick={onClose} className="mt-5 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-200">
+              Close
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-3 py-3 sm:px-4" onClick={onClose}>
         <div
@@ -88,7 +99,7 @@ export function CandidateModal({ candidate, open = false, loading = false, mode,
     );
   }
 
-  const modalCandidate = candidate as ModalCandidate;
+  const modalCandidate: ModalCandidate = { ...candidate, score: candidate.matchScore ?? 0 };
   const resolvedMode = mode ?? activeMode ?? (modalCandidate.hybridScore !== undefined && (modalCandidate.bm25Score !== undefined || modalCandidate.vectorScore !== undefined)
     ? 'hybrid'
     : modalCandidate.vectorScore !== undefined ? 'vector' : modalCandidate.bm25Score !== undefined ? 'bm25' : undefined);

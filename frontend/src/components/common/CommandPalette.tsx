@@ -52,14 +52,15 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center bg-slate-950/70 px-3 pt-20">
-      <div className="w-full max-w-xl rounded-3xl border border-white/10 bg-slate-900/95 p-3 shadow-2xl shadow-black/50">
+    <div className="command-backdrop fixed inset-0 z-[60] flex items-start justify-center px-3 pt-20" role="presentation">
+      <div className="command-palette w-full max-w-xl rounded-3xl p-3" role="dialog" aria-modal="true" aria-label="Search commands">
         <input
           autoFocus
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search commands…"
-          className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-3 py-3 text-sm text-white outline-none"
+          aria-label="Search commands"
+          className="command-search w-full rounded-2xl px-3 py-3 text-sm outline-none"
         />
         <div className="mt-2 space-y-2">
           {filtered.map((action) => (
@@ -70,7 +71,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                 action.action();
                 onClose();
               }}
-              className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/60 px-3 py-2 text-left text-sm text-slate-300 transition hover:border-indigo-400/20 hover:text-white"
+              className="command-action flex w-full items-center justify-between rounded-2xl px-3 py-2 text-left text-sm transition"
             >
               <span>{action.label}</span>
               <span className="text-[11px] uppercase tracking-[0.25em] text-slate-500">Run</span>

@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import { ResumeIngestionController } from '../controllers/resumeIngestionController';
 import { uploadMiddleware } from '../middleware/uploadMiddleware';
+import { requireApiAccessToken } from '../../../../src/middleware/apiAccess';
 
 const router = Router();
 const controller = new ResumeIngestionController();
 
+router.use(requireApiAccessToken);
 router.post('/resume/upload', uploadMiddleware, controller.uploadResume.bind(controller));
 router.post('/resume/extract', uploadMiddleware, controller.extractResume.bind(controller));
 router.post('/resume/clean', uploadMiddleware, controller.cleanResume.bind(controller));

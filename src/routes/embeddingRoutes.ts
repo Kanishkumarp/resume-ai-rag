@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import { EmbeddingService } from '../services/embeddingService';
+import { requireApiAccessToken } from '../middleware/apiAccess';
 
 const router = Router();
 const embeddingService = new EmbeddingService();
 
+router.use(requireApiAccessToken);
 router.post('/embeddings', async (req, res, next) => {
   try {
     const { input, model } = req.body ?? {};

@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const { spawnSync } = require('node:child_process');
 
 const workspaceRoot = path.resolve(__dirname, '..');
-const srcRoot = path.join(workspaceRoot, 'src');
+const testRoots = [path.join(workspaceRoot, 'src'), path.join(workspaceRoot, 'backend', 'src')];
 const testFiles = [];
 
 function walk(dir) {
@@ -21,7 +21,11 @@ function walk(dir) {
   }
 }
 
-walk(srcRoot);
+for (const testRoot of testRoots) {
+  if (fs.existsSync(testRoot)) {
+    walk(testRoot);
+  }
+}
 
 if (testFiles.length === 0) {
   console.log('No test files found.');
@@ -33,7 +37,17 @@ const result = spawnSync(process.execPath, ['--import', 'tsx', '--test', ...test
   stdio: 'inherit',
   env: {
     ...process.env,
-    TSX_TSCONFIG_PATH: path.join(workspaceRoot, 'tsconfig.json'),
+    NODE_ENV: 'test',
+    USE_SAMPLE_RESUMES: 'true',
+    MONGODB_URI: ' ',
+    MONGODB_DB_NAME: ' ',
+    MONGODB_COLLECTION_NAME: 'resume',
+    MONGODB_BM25_INDEX: ' ',
+    MONGODB_VECTOR_INDEX: ' ',
+    MISTRAL_API_KEY: ' ',
+    GROQ_API_KEY: ' ',
+    API_ACCESS_TOKEN: ' ',
+    TSX_TSCONFIG_PATH: path.join(workspaceRoot, 'tsconfig.app.json'),
   },
 });
 

@@ -72,12 +72,12 @@ export function ChatMain() {
   };
 
   return (
-    <div className="flex min-h-[70vh] flex-1 flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70 shadow-2xl shadow-black/25">
+    <section className="chat-main" aria-label="AI resume search">
       <ChatTopbar />
       <ChatMessages />
       {shouldShowSuggestionChips(messages) ? <SuggestionChips onSelect={(value) => void sendMessage(value)} /> : null}
       <ChatInputBar value={draft} onChange={setDraft} onSubmit={() => void sendMessage()} disabled={!canSubmit} />
       <CandidateModal candidate={candidate} open={open} loading={loading} mode={mode} onClose={close} />
-    </div>
+    </section>
   );
 }
