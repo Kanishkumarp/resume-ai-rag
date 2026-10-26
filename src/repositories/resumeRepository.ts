@@ -14,6 +14,9 @@ export interface ResumeDocument extends Document {
   role?: string;
   skills?: string | string[];
   embedding?: number[];
+  embeddingVersion?: number;
+  contentHash?: string;
+  profileHashes?: string[];
   location?: string;
   education?: string | string[] | Record<string, unknown>;
   totalExperience?: number;
@@ -286,42 +289,47 @@ export class ResumeRepository {
       return [];
     }
 
-    const documents = await this.getDocuments();
-    const normalizedQuery = this.normalize(trimmedQuery);
-
-    let embeddingVector: number[] = [];
-    try {
-      const embeddingResult =
-        await this.embeddingService.generateEmbedding(trimmedQuery);
-      embeddingVector = embeddingResult.embedding;
-    } catch {
-      embeddingVector = [];
-    }
+    const [documents, queryEmbedding] = await Promise.all([
+      this.getDocuments(),
+      this.embeddingService.generateEmbedding(trimmedQuery),
+    ]);
 
     return documents
       .filter((document) => this.matchesFilters(document, filters))
       .map((document) => {
+        const embedding = document.embedding;
+        if (
+          document.embeddingVersion !== 1 ||
+          !Array.isArray(embedding) ||
+          embedding.length !== queryEmbedding.embedding.length ||
+          !embedding.every(Number.isFinite)
+        ) {
+          return null;
+        }
+
         const score = this.scoreEmbeddingDocument(
           document,
-          embeddingVector,
+          queryEmbedding.embedding,
           filters,
         );
-        return { ...document, _score: score } as ResumeDocument & {
-          _score: number;
-        };
+        return score > 0
+          ? ({ ...document, _score: score } as ResumeDocument & {
+              _score: number;
+            })
+          : null;
       })
-      .sort(
-        (left, right) =>
-          (right as ResumeDocument & { _score: number })._score -
-          (left as ResumeDocument & { _score: number })._score,
+      .filter(
+        (document): document is ResumeDocument & { _score: number } =>
+          document !== null,
       )
+      .sort((left, right) => right._score - left._score)
       .slice(0, topK);
   }
 
   private async getDocuments(): Promise<ResumeDocument[]> {
     try {
       const collection = await this.getCollection();
-      const documents = await collection.find({}).limit(100).toArray();
+      const documents = await collection.find({}).toArray();
 
       if (documents.length === 0) {
         return this.getFallbackDocuments();
@@ -332,9 +340,37 @@ export class ResumeRepository {
         return this.normalizeDocument(resumeDocument);
       }) as ResumeDocument[];
 
-      return this.ensureEmbeddings(normalizedDocuments, collection);
-    } catch {
-      return this.getFallbackDocuments();
+      const seenContentHashes = new Set<string>();
+      const seenProfileHashes = new Set<string>();
+      return normalizedDocuments.filter((document) => {
+        const hash = document.contentHash?.trim();
+        const profileHashes = Array.isArray(document.profileHashes)
+          ? document.profileHashes.filter(
+              (value): value is string => typeof value === "string" && value.length > 0,
+            )
+          : [];
+        if (
+          (hash && seenContentHashes.has(hash)) ||
+          profileHashes.some((profileHash) =>
+            seenProfileHashes.has(profileHash),
+          )
+        ) {
+          return false;
+        }
+        if (hash) seenContentHashes.add(hash);
+        profileHashes.forEach((profileHash) =>
+          seenProfileHashes.add(profileHash),
+        );
+        return true;
+      });
+    } catch (error) {
+      if (
+        env.nodeEnv === "test" ||
+        process.env.USE_SAMPLE_RESUMES === "true"
+      ) {
+        return this.getFallbackDocuments();
+      }
+      throw error;
     }
   }
 
@@ -348,56 +384,6 @@ export class ResumeRepository {
     return getSampleResumeDocuments().map((document) =>
       this.normalizeDocument(document as ResumeDocument),
     );
-  }
-
-  private async ensureEmbeddings(
-    documents: ResumeDocument[],
-    collection: Collection<Document>,
-  ): Promise<ResumeDocument[]> {
-    const documentsToUpdate = [] as ResumeDocument[];
-
-    for (const document of documents) {
-      const existingEmbedding = Array.isArray(document.embedding)
-        ? document.embedding
-        : [];
-      if (existingEmbedding.length === 0) {
-        const textToEmbed = this.stringifyValue(this.buildSnippet(document));
-        if (textToEmbed.trim().length > 0) {
-          try {
-            const embeddingResponse =
-              await this.embeddingService.generateEmbedding(textToEmbed);
-            documentsToUpdate.push({
-              ...document,
-              embedding: embeddingResponse.embedding,
-            } as ResumeDocument);
-          } catch {
-            // Skip embedding generation failures and rely on text-based search.
-          }
-        }
-      }
-    }
-
-    if (documentsToUpdate.length > 0) {
-      await Promise.all(
-        documentsToUpdate.map(async (document) => {
-          const id = document._id;
-          if (id !== undefined) {
-            const filter = { _id: id } as Filter<Document>;
-            await collection.updateOne(filter, {
-              $set: { embedding: document.embedding },
-            });
-          }
-        }),
-      );
-    }
-
-    return documents.map((document) => ({
-      ...document,
-      embedding:
-        Array.isArray(document.embedding) && document.embedding.length > 0
-          ? document.embedding
-          : [],
-    })) as ResumeDocument[];
   }
 
   private async getCollection(): Promise<Collection<Document>> {
@@ -679,7 +665,16 @@ export class ResumeRepository {
 
   private extractStringValues(document: ResumeDocument): string[] {
     return Object.entries(document).flatMap(([key, value]) => {
-      if (key === "_id" || key === "embedding") {
+      if (
+        key === "_id" ||
+        key === "embedding" ||
+        key === "contentHash" ||
+        key === "profileHashes" ||
+        key === "dedupeKey" ||
+        key === "dedupeKey" ||
+        key === "embeddingVersion" ||
+        key === "embeddingDimension"
+      ) {
         return [];
       }
 

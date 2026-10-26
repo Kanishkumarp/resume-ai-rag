@@ -13,9 +13,14 @@ export interface ResumeParseResult {
 export interface ResumeIngestionDocument extends ResumeParseResult {
   fileName: string;
   rawText: string;
+  text: string;
+  contentHash: string;
+  profileHashes?: string[];
+  dedupeKey?: string;
   embedding?: number[];
   embeddingModel?: string;
   embeddingDimension?: number;
+  embeddingVersion?: number;
   createdAt: string;
   updatedAt: string;
 }

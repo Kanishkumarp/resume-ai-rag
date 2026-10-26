@@ -6,10 +6,12 @@ interface SearchState {
   weights: { bm25: number; vector: number };
   limit: number;
   filters: SearchFilters;
+  generateAnswer: boolean;
   setMode: (mode: SearchMode) => void;
   setWeights: (weights: { bm25: number; vector: number }) => void;
   setLimit: (limit: number) => void;
   setFilters: (filters: SearchFilters) => void;
+  setGenerateAnswer: (enabled: boolean) => void;
   reset: () => void;
 }
 
@@ -21,11 +23,13 @@ export const useSearchStore = create<SearchState>((set) => ({
   weights: initialWeights,
   limit: 5,
   filters: initialFilters,
+  generateAnswer: false,
   setMode: (mode) => set({ mode }),
   setWeights: (weights) => set({ weights }),
   setLimit: (limit) => set({ limit }),
   setFilters: (filters) => set({ filters }),
-  reset: () => set({ mode: 'hybrid', weights: initialWeights, limit: 5, filters: initialFilters }),
+  setGenerateAnswer: (generateAnswer) => set({ generateAnswer }),
+  reset: () => set({ mode: 'hybrid', weights: initialWeights, limit: 5, filters: initialFilters, generateAnswer: false }),
 }));
 
 export const searchStore = {

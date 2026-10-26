@@ -18,11 +18,11 @@ export class EmbeddingService {
     const selectedModel = (model ?? this.defaultModel).trim() || env.mistralEmbeddingModel.trim();
 
     if (!selectedModel) {
-      return this.createFallbackEmbedding(input, 'fallback');
+      throw new Error('MISTRAL_EMBEDDING_MODEL is not configured in the environment');
     }
 
     if (!env.mistralApiKey) {
-      return this.createFallbackEmbedding(input, selectedModel);
+      throw new Error('MISTRAL_API_KEY is not configured in the environment');
     }
 
     try {
@@ -32,47 +32,34 @@ export class EmbeddingService {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${env.mistralApiKey}`,
         },
+        signal: AbortSignal.timeout(15_000),
         body: JSON.stringify({ model: selectedModel, input }),
       });
 
       if (!response.ok) {
-        console.warn(`[embedding] Mistral request failed with status ${response.status}`);
-        return this.createFallbackEmbedding(input, selectedModel);
+        throw new Error(`Mistral embedding request failed with status ${response.status}`);
       }
 
       const payload = (await response.json()) as { data?: Array<{ embedding?: number[] }> };
       const embedding = payload.data?.[0]?.embedding;
 
-      if (!Array.isArray(embedding) || embedding.length === 0) {
-        console.warn('[embedding] Mistral response did not contain a valid embedding vector');
-        return this.createFallbackEmbedding(input, selectedModel);
+      if (!Array.isArray(embedding) || embedding.length === 0 || !embedding.every(Number.isFinite)) {
+        throw new Error('Mistral embedding response did not contain a valid vector');
+      }
+
+      if (this.embeddingSize > 0 && embedding.length !== this.embeddingSize) {
+        throw new Error(
+          `Mistral embedding dimensions did not match EMBEDDING_DIM (${embedding.length} received, ${this.embeddingSize} configured)`,
+        );
       }
 
       return {
         embedding,
         model: selectedModel,
-        dimensions: this.embeddingSize > 0 ? this.embeddingSize : embedding.length,
+        dimensions: embedding.length,
       };
     } catch (error) {
-      console.warn('[embedding] Mistral embedding request failed', error);
-      return this.createFallbackEmbedding(input, selectedModel);
+      throw error;
     }
-  }
-
-  private createFallbackEmbedding(input: string, model: string): EmbeddingResponse {
-    const values: number[] = [];
-    const seed = input.length % 7;
-    const size = this.embeddingSize > 0 ? this.embeddingSize : 16;
-
-    for (let index = 0; index < size; index += 1) {
-      const value = Math.sin((index + 1) * (seed + 1)) * 0.5 + 0.5;
-      values.push(Number(value.toFixed(6)));
-    }
-
-    return {
-      embedding: values,
-      model: model || 'fallback',
-      dimensions: values.length,
-    };
   }
 }

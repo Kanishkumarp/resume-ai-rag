@@ -1,12 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { EmbeddingService } from './embeddingService';
+import { env } from '../config/environment';
 
-test('embedding service respects the configured embedding size from environment', async () => {
-  const service = new EmbeddingService();
-  const result = await service.generateEmbedding('resume search');
+test('embedding service requires a real Mistral key instead of returning a fabricated vector', async () => {
+  const previousApiKey = env.mistralApiKey;
+  env.mistralApiKey = '';
 
-  assert.equal(result.dimensions, 1024);
-  assert.ok(Array.isArray(result.embedding));
-  assert.ok(result.embedding.length > 0);
+  try {
+    await assert.rejects(
+      new EmbeddingService().generateEmbedding('resume search'),
+      /MISTRAL_API_KEY is not configured/,
+    );
+  } finally {
+    env.mistralApiKey = previousApiKey;
+  }
 });

@@ -136,3 +136,63 @@ test('the configured access token can only bootstrap one durable session', async
     env.apiAccessToken = previousToken;
   }
 });
+
+test('allows local development access when no API access token is configured', async () => {
+  const previousToken = env.apiAccessToken;
+  const previousNodeEnv = env.nodeEnv;
+  env.apiAccessToken = '';
+  env.nodeEnv = 'development';
+
+  try {
+    const repository: ApiAccessRepository = {
+      consumeAccessToken: async () => {
+        throw new Error('Development access should not consume a token.');
+      },
+      hasActiveSession: async () => {
+        throw new Error('Development access should not check a session.');
+      },
+    };
+    const { createSession, requireApiAccessToken, call } = makeHarness(repository);
+
+    const session = await call(createSession);
+    assert.equal(session.statusCode, 204);
+    assert.equal(session.ended, true);
+    assert.equal(session.sessionCookie, undefined);
+
+    const request = await call(requireApiAccessToken);
+    assert.equal(request.statusCode, 200);
+    assert.equal(request.nextError, undefined);
+  } finally {
+    env.apiAccessToken = previousToken;
+    env.nodeEnv = previousNodeEnv;
+  }
+});
+
+test('keeps API access protected in production without a configured token', async () => {
+  const previousToken = env.apiAccessToken;
+  const previousNodeEnv = env.nodeEnv;
+  env.apiAccessToken = '';
+  env.nodeEnv = 'production';
+
+  try {
+    const repository: ApiAccessRepository = {
+      consumeAccessToken: async () => false,
+      hasActiveSession: async () => false,
+    };
+    const { createSession, requireApiAccessToken, call } = makeHarness(repository);
+
+    const session = await call(createSession);
+    assert.equal(session.statusCode, 503);
+    assert.deepEqual(session.body, {
+      error: 'service_unavailable',
+      message: 'API access is not configured.',
+      statusCode: 503,
+    });
+
+    const request = await call(requireApiAccessToken);
+    assert.equal(request.statusCode, 401);
+  } finally {
+    env.apiAccessToken = previousToken;
+    env.nodeEnv = previousNodeEnv;
+  }
+});

@@ -4,17 +4,40 @@ import { ResumeParseResult } from '../types';
 import { ResumeParserService } from './resumeParserService';
 import { ResumeIngestionRepository } from '../repositories/resumeIngestionRepository';
 import { cleanResumeText } from '../utils/textCleaner';
+import { createResumeContentHash } from '../utils/resumeContentHash';
+import { createResumeProfileHashes } from '../utils/resumeProfileHashes';
 import { SKILL_NAMES } from '../utils/regexUtils';
+import type { ResumeIngestionDocument } from '../types';
 
 export interface IngestResumeInput {
   fileName: string;
   rawText: string;
 }
 
+interface ResumeIngestionStore {
+  findByContentHash(
+    contentHash: string,
+    profileHashes: string[],
+  ): Promise<string | null>;
+  save(document: ResumeIngestionDocument): Promise<{
+    id: string;
+    duplicate: boolean;
+  }>;
+}
+
+interface ResumeEmbeddingGenerator {
+  generateEmbedding(
+    input: string,
+    model?: string,
+  ): Promise<{ embedding: number[]; model: string; dimensions: number }>;
+}
+
 export class ResumeIngestionService {
-  private readonly parser = new ResumeParserService();
-  private readonly embeddingService = new EmbeddingService();
-  private readonly repository = new ResumeIngestionRepository();
+  constructor(
+    private readonly parser = new ResumeParserService(),
+    private readonly embeddingService: ResumeEmbeddingGenerator = new EmbeddingService(),
+    private readonly repository: ResumeIngestionStore = new ResumeIngestionRepository(),
+  ) {}
 
   extractText(input: IngestResumeInput): { fileName: string; rawText: string } {
     return {
@@ -42,7 +65,7 @@ export class ResumeIngestionService {
       parsed.role,
       parsed.skills.join(','),
       parsed.company,
-      rawText,
+      rawText.slice(0, 20_000),
     ].filter(Boolean).join('\n');
   }
 
@@ -50,65 +73,101 @@ export class ResumeIngestionService {
     return this.generateEmbeddingSafely(input);
   }
 
-  async storeResume(input: IngestResumeInput): Promise<{ id: string; parsed: ResumeParseResult; embedding: number[]; model: string; dimensions: number }> {
+  async storeResume(input: IngestResumeInput): Promise<{
+    id: string;
+    parsed: ResumeParseResult;
+    embedding?: number[];
+    model?: string;
+    dimensions?: number;
+    duplicate: boolean;
+    warnings: string[];
+  }> {
     const parsed = this.parseResumeText(input.rawText);
-    const embeddingText = this.buildEmbeddingText(parsed, input.rawText);
+    const cleanedText = this.cleanText(input.rawText);
+    const contentHash = createResumeContentHash(cleanedText);
+    const profileHashes = createResumeProfileHashes(
+      parsed.email,
+      parsed.phone,
+      parsed.name,
+      parsed.role,
+      parsed.company,
+    );
+    const existingId = await this.repository.findByContentHash(
+      contentHash,
+      profileHashes,
+    );
+    if (existingId) {
+      return {
+        id: existingId,
+        parsed,
+        duplicate: true,
+        warnings: ['This resume has already been ingested; the existing record was reused.'],
+      };
+    }
 
-    let embeddingResult: { embedding: number[]; model: string; dimensions: number };
+    const embeddingText = this.buildEmbeddingText(parsed, cleanedText);
+
+    let embeddingResult: { embedding: number[]; model: string; dimensions: number } | undefined;
+    const warnings: string[] = [];
     try {
       embeddingResult = await this.generateEmbedding(embeddingText);
-    } catch (error) {
-      embeddingResult = {
-        embedding: this.createFallbackEmbedding(embeddingText),
-        model: 'fallback-local',
-        dimensions: Math.min(32, Math.max(8, embeddingText.length % 32)),
-      };
+    } catch {
+      warnings.push(
+        'Mistral embeddings are unavailable; this resume was stored for keyword search only.',
+      );
     }
 
     const document = {
       fileName: input.fileName,
       rawText: input.rawText,
+      text: cleanedText,
+      contentHash,
+      profileHashes,
       ...parsed,
-      embedding: embeddingResult.embedding,
-      embeddingModel: embeddingResult.model,
-      embeddingDimension: embeddingResult.dimensions,
+      ...(embeddingResult
+        ? {
+            embedding: embeddingResult.embedding,
+            embeddingModel: embeddingResult.model,
+            embeddingDimension: embeddingResult.dimensions,
+            embeddingVersion: 1,
+          }
+        : {}),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    let id = 'local-' + Date.now();
-    try {
-      id = await this.repository.save(document);
-    } catch (error) {
-      console.warn('[ingestion] falling back to local-only persistence', error);
-    }
+    const saved = await this.repository.save(document);
 
     return {
-      id,
+      id: saved.id,
       parsed,
-      embedding: embeddingResult.embedding,
-      model: embeddingResult.model,
-      dimensions: embeddingResult.dimensions,
+      embedding: embeddingResult?.embedding,
+      model: embeddingResult?.model,
+      dimensions: embeddingResult?.dimensions,
+      duplicate: saved.duplicate,
+      warnings: saved.duplicate
+        ? [...warnings, 'This resume has already been ingested; the existing record was reused.']
+        : warnings,
     };
   }
 
-  async ingestResume(input: IngestResumeInput): Promise<{ id: string; parsed: ResumeParseResult }> {
+  async ingestResume(input: IngestResumeInput): Promise<{
+    id: string;
+    parsed: ResumeParseResult;
+    duplicate: boolean;
+    warnings: string[];
+  }> {
     if (!input.rawText || input.rawText.trim().length === 0) {
       throw Object.assign(new Error('Resume extraction failed. No text was found.'), { status: 422 });
     }
 
     const result = await this.storeResume(input);
-    return { id: result.id, parsed: result.parsed };
-  }
-
-  private createFallbackEmbedding(text: string): number[] {
-    const values: number[] = [];
-    const seed = text.length % 7;
-    for (let index = 0; index < 16; index += 1) {
-      const value = Math.sin((index + 1) * (seed + 1)) * 0.5 + 0.5;
-      values.push(Number(value.toFixed(6)));
-    }
-    return values;
+    return {
+      id: result.id,
+      parsed: result.parsed,
+      duplicate: result.duplicate,
+      warnings: result.warnings,
+    };
   }
 
   private async generateEmbeddingSafely(input: string): Promise<{ embedding: number[]; model: string; dimensions: number }> {

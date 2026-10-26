@@ -19,6 +19,7 @@ export function ResumeUploadCard({
 }: ResumeUploadCardProps) {
   const compact = variant === 'compact';
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [duplicate, setDuplicate] = useState(false);
   const status = useIngestionStore((state) => state.status);
   const progress = useIngestionStore((state) => state.progress);
   const error = useIngestionStore((state) => state.error);
@@ -70,6 +71,7 @@ export function ResumeUploadCard({
 
     setFileName(file.name);
     setError(null);
+    setDuplicate(false);
     setStatus('uploading');
     setProgress(20);
     setStepIndex(1);
@@ -79,7 +81,8 @@ export function ResumeUploadCard({
       if (onUpload) {
         await onUpload(file, file.name);
       } else {
-        await uploadResume(file);
+        const result = await uploadResume(file);
+        setDuplicate(result.duplicate);
       }
       setProgress(55);
       setStatus('processing');
@@ -104,12 +107,15 @@ export function ResumeUploadCard({
   };
 
   const helperText = useMemo(() => {
+    if (status === 'success' && duplicate) {
+      return 'Duplicate resume detected; existing record reused';
+    }
     if (status === 'success') return 'Resume uploaded successfully';
     if (status === 'uploading') return 'Uploading resume...';
     if (status === 'processing') return 'Processing resume...';
     if (status === 'error') return error ?? 'Network error';
     return 'Ready to upload your resume';
-  }, [error, status]);
+  }, [duplicate, error, status]);
 
   return (
     <div
@@ -196,7 +202,7 @@ export function ResumeUploadCard({
 
       {status === 'success' && (
         <div className={compact ? 'mt-3' : 'mt-4'}>
-          <IngestionResultScreen fileName={fileName} />
+          <IngestionResultScreen fileName={fileName} duplicate={duplicate} />
         </div>
       )}
     </div>

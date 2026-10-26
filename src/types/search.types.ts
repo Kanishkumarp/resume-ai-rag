@@ -18,6 +18,7 @@ export type SearchRequest = {
     bm25: number;
     vector: number;
   };
+  generateAnswer?: boolean;
 };
 
 export type SearchResult = {

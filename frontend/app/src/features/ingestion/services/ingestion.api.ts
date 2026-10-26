@@ -12,7 +12,9 @@ function normalizeErrorMessage(error: unknown): string {
   return 'Network error';
 }
 
-export async function uploadResume(file: File): Promise<{ success: boolean }> {
+export async function uploadResume(
+  file: File,
+): Promise<{ success: boolean; duplicate: boolean }> {
   const formData = new FormData();
   formData.append('file', file, file.name);
 
@@ -27,7 +29,10 @@ export async function uploadResume(file: File): Promise<{ success: boolean }> {
       throw new Error('Network error');
     }
 
-    return { success: true };
+    return {
+      success: true,
+      duplicate: response.data?.duplicate === true,
+    };
   } catch (error) {
     const message = normalizeErrorMessage(error);
     if (message.includes('extract')) {

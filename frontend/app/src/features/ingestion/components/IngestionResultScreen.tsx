@@ -1,11 +1,17 @@
 interface IngestionResultScreenProps {
   fileName?: string | null;
+  duplicate?: boolean;
 }
 
-export function IngestionResultScreen({ fileName }: IngestionResultScreenProps) {
+export function IngestionResultScreen({
+  fileName,
+  duplicate = false,
+}: IngestionResultScreenProps) {
   const successLines = [
-    'Resume uploaded successfully',
-    'Embedding generated successfully',
+    duplicate
+      ? 'Duplicate resume detected; existing record reused'
+      : 'Resume uploaded successfully',
+    ...(duplicate ? [] : ['Embedding generated successfully']),
     'MongoDB ingestion completed',
     'Vector search ready',
   ];

@@ -39,7 +39,6 @@ export class HybridSearchService {
       bm25Ms = Date.now() - startedAt;
     } catch (_error) {
       bm25Fallback = true;
-      vectorFallback = true;
       warnings.push("BM25 search failed.");
     }
 
@@ -48,7 +47,6 @@ export class HybridSearchService {
       vectorResults = await this.vectorService.search(query, filters, topK);
       vectorMs = Date.now() - startedAt;
     } catch (_error) {
-      bm25Fallback = true;
       vectorFallback = true;
       warnings.push("Vector search failed.");
     }
@@ -63,7 +61,7 @@ export class HybridSearchService {
     if (vectorResults.length === 0 && bm25Results.length > 0) {
       vectorFallback = true;
       warnings.push(
-        "Vector search returned no results; using BM25 results only.",
+        "Vector search returned no results; using BM25 results only. If this collection contains resumes ingested before versioned embeddings were added, configure MISTRAL_API_KEY and run npm run reindex:embeddings to make them available to semantic search.",
       );
     }
 

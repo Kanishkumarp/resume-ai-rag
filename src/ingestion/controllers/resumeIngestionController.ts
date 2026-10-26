@@ -141,9 +141,13 @@ export class ResumeIngestionController {
 
       const result = await this.service.storeResume(input);
       res.status(200).json({
-        message: 'Resume stored successfully',
+        message: result.duplicate
+          ? 'Duplicate resume detected; existing record reused'
+          : 'Resume stored successfully',
         id: result.id,
+        duplicate: result.duplicate,
         parsed: result.parsed,
+        warnings: result.warnings,
       });
     } catch (error) {
       next(error);
@@ -160,9 +164,13 @@ export class ResumeIngestionController {
 
       const result = await this.service.ingestResume(input);
       res.status(200).json({
-        message: 'Resume ingested successfully',
+        message: result.duplicate
+          ? 'Duplicate resume detected; existing record reused'
+          : 'Resume ingested successfully',
         id: result.id,
+        duplicate: result.duplicate,
         parsed: result.parsed,
+        warnings: result.warnings,
         status: 'completed',
       });
     } catch (error) {

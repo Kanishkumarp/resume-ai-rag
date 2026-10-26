@@ -9,11 +9,16 @@ export interface SearchResponse {
   duration?: number;
   rerankApplied?: boolean;
   warnings?: string[];
+  answer?: string;
 }
 
 export { extractCandidateMetadata, normalizeResults } from './searchResultNormalizer';
 
-export function getSearchEndpoint(mode: SearchMode): string {
+export function getSearchEndpoint(mode: SearchMode, generateAnswer = false): string {
+  if (mode === 'hybrid' && generateAnswer) {
+    return '/v1/search';
+  }
+
   if (mode === 'bm25') {
     return '/v1/search/bm25';
   }
@@ -28,12 +33,14 @@ export function getSearchEndpoint(mode: SearchMode): string {
 export async function searchResumes(request: SearchRequest, signal?: AbortSignal): Promise<SearchResponse> {
   const mode: SearchMode = request.mode ?? 'hybrid';
   const startedAt = performance.now();
-  const response = await apiClient.post<unknown>(getSearchEndpoint(mode), {
+  const endpoint = getSearchEndpoint(mode, request.generateAnswer);
+  const response = await apiClient.post<unknown>(endpoint, {
     query: request.query,
     topK: request.limit ?? 5,
     mode,
     weights: request.weights,
     filters: request.filters,
+    generateAnswer: request.generateAnswer,
   }, { signal });
 
   const payload = response.data as Record<string, unknown>;
@@ -49,6 +56,7 @@ export async function searchResumes(request: SearchRequest, signal?: AbortSignal
     duration: typeof timings.totalMs === 'number' ? timings.totalMs : Math.round(performance.now() - startedAt),
     rerankApplied: typeof payload.rerankApplied === 'boolean' ? payload.rerankApplied : undefined,
     warnings: Array.isArray(payload.warnings) ? payload.warnings.filter((warning): warning is string => typeof warning === 'string') : undefined,
+    answer: typeof payload.answer === 'string' ? payload.answer : undefined,
   };
 }
 

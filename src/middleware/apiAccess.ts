@@ -6,6 +6,9 @@ import { apiAccessRepository, type ApiAccessRepository } from '../repositories/a
 const SESSION_COOKIE = 'resume_session';
 const SESSION_DURATION_MS = 12 * 60 * 60 * 1000;
 
+const hasUnconfiguredDevelopmentAccess = (): boolean =>
+  env.nodeEnv === 'development' && env.apiAccessToken.length === 0;
+
 const sendUnauthorized = (res: Response): void => {
   res.status(401).json({
     error: 'unauthorized',
@@ -43,6 +46,11 @@ const tokensMatch = (receivedToken: unknown, expectedToken: string): receivedTok
 export const createApiAccessHandlers = (repository: ApiAccessRepository) => {
   const requireApiAccessToken: RequestHandler = async (req, res, next) => {
     try {
+      if (hasUnconfiguredDevelopmentAccess()) {
+        next();
+        return;
+      }
+
       const session = readSessionCookie(req);
       if (!session || !await repository.hasActiveSession(hashValue(session), new Date())) {
         res.clearCookie(SESSION_COOKIE, { path: '/v1' });
@@ -57,6 +65,11 @@ export const createApiAccessHandlers = (repository: ApiAccessRepository) => {
 
   const createSession: RequestHandler = async (req, res, next) => {
     try {
+      if (hasUnconfiguredDevelopmentAccess()) {
+        res.status(204).end();
+        return;
+      }
+
       const existingSession = readSessionCookie(req);
       if (existingSession && await repository.hasActiveSession(hashValue(existingSession), new Date())) {
         res.status(204).end();

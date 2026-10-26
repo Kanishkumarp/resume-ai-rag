@@ -103,7 +103,72 @@ test("rerankCandidates accepts only known IDs and verbatim resume evidence", asy
   }
 });
 
-test("rerankCandidates limits resume context to stay within Groq token budgets", async () => {
+test("rerankCandidates retries Groq JSON validation failures without JSON mode", async () => {
+  const originalApiKey = env.groqApiKey;
+  const originalFetch = globalThis.fetch;
+  const requestBodies: Array<Record<string, unknown>> = [];
+  env.groqApiKey = "test-key";
+  globalThis.fetch = (async (_input, init) => {
+    requestBodies.push(JSON.parse(String(init?.body)) as Record<string, unknown>);
+    if (requestBodies.length === 1) {
+      return new Response(
+        JSON.stringify({
+          error: {
+            message:
+              "Failed to validate JSON. Please adjust your prompt. See 'failed_generation' for more details.",
+          },
+        }),
+        { status: 400 },
+      );
+    }
+
+    return new Response(
+      JSON.stringify({
+        choices: [
+          {
+            message: {
+              content: `\`\`\`json\n${JSON.stringify({
+                results: [{ resumeId: "candidate-1", rerankScore: 90 }],
+              })}\n\`\`\``,
+            },
+          },
+        ],
+      }),
+      { status: 200 },
+    );
+  }) as typeof fetch;
+
+  try {
+    const ranked = await new LLMService().rerankCandidates("frontend engineer", [
+      {
+        resumeId: "candidate-1",
+        role: "Frontend Engineer",
+        skills: ["React", "TypeScript"],
+        snippet: "Built React and TypeScript applications.",
+      },
+    ]);
+
+    assert.equal(requestBodies.length, 2);
+    const responseFormat = requestBodies[0]?.response_format as
+      | { type?: string }
+      | undefined;
+    assert.equal(responseFormat?.type, "json_schema");
+    assert.equal(ranked.rerankApplied, true);
+    assert.equal(ranked.results[0]?.resumeId, "candidate-1");
+    assert.equal(ranked.results[0]?.rerankScore, 90);
+    assert.deepEqual(ranked.warnings, []);
+    const retryMessages = requestBodies[1]?.messages as Array<{
+      content: string;
+    }>;
+    assert.ok(retryMessages[0]?.content.includes("exactly one valid JSON object"));
+    assert.equal(requestBodies[1]?.response_format, undefined);
+  } finally {
+    globalThis.fetch = originalFetch;
+    env.groqApiKey = originalApiKey;
+  }
+});
+
+test("rerankCandidates limits resume context to reduce Groq token usage", async () => {
   const originalApiKey = env.groqApiKey;
   const originalFetch = globalThis.fetch;
   let requestBody: Record<string, unknown> | undefined;
@@ -153,14 +218,90 @@ test("rerankCandidates limits resume context to stay within Groq token budgets",
     };
 
     assert.equal(ranked.rerankApplied, true);
-    assert.equal(submitted.candidates.length, 12);
+    assert.equal(submitted.candidates.length, 6);
     assert.ok(
       submitted.candidates.every(
-        (candidate) => candidate.resumeExcerpt.length <= 600,
+        (candidate) => candidate.resumeExcerpt.length <= 350,
       ),
     );
-    assert.equal(requestBody?.max_tokens, 1024);
+    assert.equal(requestBody?.max_tokens, 384);
     assert.equal(requestBody?.model, "openai/gpt-oss-20b");
+  } finally {
+    globalThis.fetch = originalFetch;
+    env.groqApiKey = originalApiKey;
+  }
+});
+
+test("rerankCandidates handles Groq TPM limits without retrying an oversized request", async () => {
+  const originalApiKey = env.groqApiKey;
+  const originalFetch = globalThis.fetch;
+  let requestCount = 0;
+  env.groqApiKey = "test-key";
+  globalThis.fetch = (async () => {
+    requestCount += 1;
+    return new Response(
+      JSON.stringify({
+        error: { message: "Rate limit reached: tokens per minute." },
+      }),
+      { status: 429 },
+    );
+  }) as typeof fetch;
+
+  try {
+    const ranked = await new LLMService().rerankCandidates("ML engineer", [
+      { resumeId: "1", snippet: "Machine learning engineer" },
+    ]);
+    assert.equal(requestCount, 1);
+    assert.equal(ranked.rerankApplied, false);
+    assert.equal(ranked.results[0]?.resumeId, "1");
+    assert.match(ranked.warnings[0] ?? "", /rate limited/i);
+    assert.match(ranked.warnings[0] ?? "", /hybrid ordering was retained/i);
+  } finally {
+    globalThis.fetch = originalFetch;
+    env.groqApiKey = originalApiKey;
+  }
+});
+
+test("rerankCandidates locally orders candidates when Groq returns malformed JSON", async () => {
+  const originalApiKey = env.groqApiKey;
+  const originalFetch = globalThis.fetch;
+  env.groqApiKey = "test-key";
+  globalThis.fetch = (async () =>
+    new Response(
+      JSON.stringify({
+        choices: [{ message: { content: "This is not valid JSON" } }],
+      }),
+      { status: 200 },
+    )) as typeof fetch;
+
+  try {
+    const ranked = await new LLMService().rerankCandidates(
+      "machine learning NLP engineer",
+      [
+        {
+          resumeId: "unrelated",
+          role: "Frontend Engineer",
+          skills: ["React", "CSS"],
+          snippet: "Built user interfaces.",
+          hybridScore: 0.9,
+        },
+        {
+          resumeId: "relevant",
+          role: "Machine Learning Engineer",
+          skills: ["NLP", "Python"],
+          snippet: "Built NLP models and machine learning pipelines.",
+          hybridScore: 0.3,
+        },
+      ],
+    );
+
+    assert.deepEqual(
+      ranked.results.map((candidate) => candidate.resumeId),
+      ["relevant", "unrelated"],
+    );
+    assert.equal(ranked.rerankApplied, false);
+    assert.match(ranked.warnings[0] ?? "", /malformed JSON/i);
+    assert.match(ranked.warnings[0] ?? "", /local relevance ranking/i);
   } finally {
     globalThis.fetch = originalFetch;
     env.groqApiKey = originalApiKey;

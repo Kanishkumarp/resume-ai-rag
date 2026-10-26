@@ -27,22 +27,16 @@ test("hybrid search returns BM25 and vector result sets with fallback metadata",
   );
   assert.ok(Array.isArray(result.warnings), "Expected warnings to be an array");
   assert.equal(result.source, "hybrid");
-  assert.equal(
-    result.vectorFallback,
-    false,
-    "Vector fallback should be disabled when both branches return results",
-  );
+  assert.equal(result.vectorFallback, true);
   assert.equal(
     result.bm25Fallback,
     false,
-    "BM25 fallback should be disabled when both branches return results",
+    "BM25 remains available when semantic embeddings are not configured",
   );
   assert.equal(typeof result.timings.bm25Ms, "number");
   assert.equal(typeof result.timings.vectorMs, "number");
-  assert.ok(
-    result.bm25Results.length > 0 || result.vectorResults.length > 0,
-    "Expected at least one search result",
-  );
+  assert.ok(result.bm25Results.length > 0);
+  assert.equal(result.vectorResults.length, 0);
   assert.ok(
     result.results.length <= 3,
     "Expected hybrid results to respect topK",
@@ -226,6 +220,7 @@ test("search endpoint mapping keeps BM25 and vector requests on their own routes
   assert.equal(getSearchEndpoint("bm25"), "/v1/search/bm25");
   assert.equal(getSearchEndpoint("vector"), "/v1/search/vector");
   assert.equal(getSearchEndpoint("hybrid"), "/v1/search/hybrid");
+  assert.equal(getSearchEndpoint("hybrid", true), "/v1/search");
 });
 
 test("bm25 search exposes only the BM25 score for BM25-only results", async () => {
@@ -352,23 +347,9 @@ test("bm25 and vector searches expose branch scores in the backend response", as
     "Expected the visible score to match the BM25 branch score",
   );
 
-  const vectorResults = await service.vectorSearch(
-    "node.js backend engineer",
-    {},
-    3,
-  );
-  assert.ok(
-    vectorResults.length > 0,
-    "Expected vector search to return results",
-  );
-  assert.ok(
-    typeof vectorResults[0]?.vectorScore === "number",
-    "Expected vector results to expose vectorScore",
-  );
-  assert.equal(
-    vectorResults[0]?.score,
-    vectorResults[0]?.vectorScore,
-    "Expected the visible score to match the vector branch score",
+  await assert.rejects(
+    service.vectorSearch("node.js backend engineer", {}, 3),
+    /MISTRAL_API_KEY is not configured/,
   );
 });
 

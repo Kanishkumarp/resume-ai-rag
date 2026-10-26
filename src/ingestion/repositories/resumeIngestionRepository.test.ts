@@ -16,15 +16,19 @@ test('save uses the configured Mongo collection name without writing to a live d
     (mongoConnection as typeof mongoConnection & { getCollection: typeof mongoConnection.getCollection }).getCollection = async (name) => {
       requestedCollectionName = name;
       return {
+        createIndex: async () => 'resume_dedupe_key_unique',
+        findOne: async () => null,
         insertOne: async () => ({
-          insertedId: { toString: () => 'test-resume-id' },
+          insertedId: { toString: () => 'test-content-hash' },
         }),
       } as never;
     };
 
-    const insertedId = await repository.save({
+    const saved = await repository.save({
       fileName: 'test.pdf',
       rawText: 'test',
+      text: 'test',
+      contentHash: 'test-content-hash',
       name: 'Test',
       email: 'test@example.com',
       phone: '123',
@@ -40,7 +44,7 @@ test('save uses the configured Mongo collection name without writing to a live d
       updatedAt: new Date().toISOString(),
     } satisfies ResumeIngestionDocument);
 
-    assert.equal(insertedId, 'test-resume-id');
+    assert.deepEqual(saved, { id: 'test-content-hash', duplicate: false });
     assert.equal(requestedCollectionName, collectionName);
   } finally {
     (mongoConnection as typeof mongoConnection & { getCollection: typeof mongoConnection.getCollection }).getCollection = originalGetCollection;

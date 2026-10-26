@@ -144,6 +144,7 @@ export class ResumeIngestionController {
         message: 'Resume stored successfully',
         id: result.id,
         parsed: result.parsed,
+        warnings: result.warnings,
       });
     } catch (error) {
       next(error);
@@ -163,6 +164,7 @@ export class ResumeIngestionController {
         message: 'Resume ingested successfully',
         id: result.id,
         parsed: result.parsed,
+        warnings: result.warnings,
         status: 'completed',
       });
     } catch (error) {

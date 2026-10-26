@@ -11,6 +11,8 @@
     "build:backend": "tsc -p tsconfig.backend.json",
     "start": "node dist/backend/src/server.js",
     "bootstrap:resumes": "ts-node --project tsconfig.backend.json scripts/backend/bootstrapResumes.ts",
+    "reindex:embeddings": "ts-node --project tsconfig.backend.json scripts/backend/reindexResumeEmbeddings.ts",
+    "dedupe:resumes": "ts-node --project tsconfig.backend.json scripts/backend/reindexResumeEmbeddings.ts --hash-only",
     "lint": "npm run typecheck",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "test": "node scripts/run-tests.cjs",

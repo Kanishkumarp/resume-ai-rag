@@ -8,7 +8,7 @@ import authRoutes from '../../src/routes/authRoutes';
 import healthRoutes from '../../src/routes/healthRoutes';
 import embeddingRoutes from '../../src/routes/embeddingRoutes';
 import searchRoutes from '../../src/routes/searchRoutes';
-import ingestionRoutes from './ingestion/routes/ingestionRoutes';
+import ingestionRoutes from '../../src/ingestion/routes/ingestionRoutes';
 import retrievalRoutes from './retrieval/routes/retrievalRoutes';
 
 export const createApp = (): Express => {

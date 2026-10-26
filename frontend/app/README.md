@@ -7,3 +7,8 @@ own folders.
 
 The older frontend has been retained under `legacy/frontend/` for reference
 and is not part of the active build.
+
+The active search workspace keeps its settings sidebar visible on wide screens
+and opens those controls in an accessible, scrollable drawer on smaller screens.
+The resume ingestion screen is available at `/ingestion` and supports the same
+mobile-first layout.

@@ -4,10 +4,12 @@ import { Sidebar } from '../components/layout/Sidebar';
 import { ChatMain } from '../components/features/chat/ChatMain';
 import { WorkspaceStatsBar } from '../components/common/WorkspaceStatsBar';
 import { CommandPalette } from '../components/common/CommandPalette';
-import { Flame, Sparkles } from 'lucide-react';
+import { Flame, Settings2, Sparkles } from 'lucide-react';
+import { MobileDrawer } from '../components/layout/MobileDrawer';
 
 export function ChatPage() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -42,8 +44,20 @@ export function ChatPage() {
               </h1>
             </div>
           </div>
-          <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/10 bg-white/[0.035] px-3.5 py-2 text-xs font-medium text-slate-300 sm:self-auto">
-            <Sparkles size={14} className="text-red-300" /> RAG-powered search
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-3.5 py-2 text-xs font-medium text-slate-300">
+              <Sparkles size={14} className="text-red-300" /> RAG-powered search
+            </div>
+            <button
+              type="button"
+              aria-label="Open search settings"
+              aria-expanded={settingsOpen}
+              aria-controls="mobile-search-settings"
+              onClick={() => setSettingsOpen(true)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.035] text-slate-200 transition hover:border-red-400/25 hover:text-white lg:hidden"
+            >
+              <Settings2 size={18} />
+            </button>
           </div>
         </header>
 
@@ -52,7 +66,9 @@ export function ChatPage() {
         </section>
 
         <div className="grid flex-1 grid-cols-1 items-start gap-5 lg:min-h-0 lg:grid-cols-[300px_minmax(0,1fr)]">
-          <Sidebar />
+          <aside className="hidden lg:block">
+            <Sidebar />
+          </aside>
           <main className="flex min-w-0 justify-center lg:min-h-0">
             <ChatMain />
           </main>
@@ -67,6 +83,9 @@ export function ChatPage() {
         open={commandPaletteOpen}
         onClose={() => setCommandPaletteOpen(false)}
       />
+      <MobileDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)}>
+        <Sidebar />
+      </MobileDrawer>
     </AppShell>
   );
 }

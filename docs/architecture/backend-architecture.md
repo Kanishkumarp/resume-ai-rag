@@ -80,6 +80,15 @@ The end-to-end search flow is:
 5. Re-rank the top candidates with the LLM.
 6. Optionally summarize the best matches.
 
+Resume ingestion stores normalized searchable text and only provider-generated
+vectors. When Mistral is unavailable, ingestion remains usable for BM25 and
+reports that semantic retrieval is unavailable for that resume. Embeddings are
+versioned; `npm run reindex:embeddings` regenerates vectors created by earlier
+versions. `npm run dedupe:resumes` backfills normalized content and profile
+identity hashes without regenerating embeddings. Ingestion reuses matching
+records, and retrieval collapses existing documents with the same identity
+without deleting them.
+
 ## Authentication, Resilience, and Logging
 
 Protected search, candidate-profile, resume-ingestion, and embedding APIs use a

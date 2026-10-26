@@ -1,9 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ResumeIngestionService } from './resumeIngestionService';
+import type { ResumeIngestionDocument } from '../types';
 
-test('ingestResume parses and stores a resume without external dependencies', async () => {
-  const service = new ResumeIngestionService();
+test('ingestResume stores searchable text without fabricated embeddings', async () => {
+  let storedDocument: ResumeIngestionDocument | undefined;
+  const service = new ResumeIngestionService(
+    undefined,
+    { generateEmbedding: async () => { throw new Error('Mistral unavailable'); } },
+    {
+      save: async (document) => {
+        storedDocument = document;
+        return 'resume-id';
+      },
+    },
+  );
   const result = await service.ingestResume({
     fileName: 'resume.pdf',
     rawText: [
@@ -26,6 +37,9 @@ test('ingestResume parses and stores a resume without external dependencies', as
   assert.equal(result.parsed.role, 'Senior Backend Engineer');
   assert.ok(result.parsed.skills.includes('Java'));
   assert.ok(result.parsed.skills.includes('MongoDB'));
+  assert.equal(storedDocument?.text.includes('Senior Backend Engineer'), true);
+  assert.equal(storedDocument?.embedding, undefined);
+  assert.match(result.warnings[0] ?? '', /keyword search only/);
 });
 
 test('cleanText and detectSkills provide the expected resume preprocessing results', () => {

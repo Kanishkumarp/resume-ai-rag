@@ -17,6 +17,9 @@ const buildResumeDocuments = async () => {
     documentsWithEmbeddings.push({
       ...document,
       embedding: embedding.embedding,
+      embeddingModel: embedding.model,
+      embeddingDimension: embedding.dimensions,
+      embeddingVersion: 1,
       createdAt: new Date().toISOString(),
     });
   }

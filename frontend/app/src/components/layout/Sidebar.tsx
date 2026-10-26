@@ -11,6 +11,8 @@ import { RotateCcw, Settings2 } from "lucide-react";
 export function Sidebar() {
   const mode = useSearchStore((state) => state.mode);
   const filters = useSearchStore((state) => state.filters);
+  const generateAnswer = useSearchStore((state) => state.generateAnswer);
+  const setGenerateAnswer = useSearchStore((state) => state.setGenerateAnswer);
   const setFilters = useSearchStore((state) => state.setFilters);
   const reset = useSearchStore((state) => state.reset);
   const clearMessages = useChatStore((state) => state.clearMessages);
@@ -139,6 +141,24 @@ export function Sidebar() {
             </p>
           </div>
           <ResultsLimitSelect />
+          {mode === "hybrid" ? (
+            <label className="mt-3 flex cursor-pointer items-start gap-2.5 border-t border-white/[0.06] pt-3">
+              <input
+                type="checkbox"
+                checked={generateAnswer}
+                onChange={(event) => setGenerateAnswer(event.target.checked)}
+                className="mt-0.5 accent-red-500"
+              />
+              <span>
+                <span className="block text-xs font-medium text-slate-300">
+                  Generate grounded answer
+                </span>
+                <span className="mt-1 block text-[10px] leading-4 text-slate-500">
+                  Uses the configured LLM and adds a model request.
+                </span>
+              </span>
+            </label>
+          ) : null}
         </div>
 
         <section aria-label="Resume ingestion">

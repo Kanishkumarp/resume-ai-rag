@@ -24,6 +24,7 @@ export function ChatMain() {
   const setTyping = useChatStore((state) => state.setTyping);
   const mode = useSearchStore((state) => state.mode);
   const limit = useSearchStore((state) => state.limit);
+  const generateAnswer = useSearchStore((state) => state.generateAnswer);
   const weights = useSearchStore((state) => state.weights);
   const filters = useSearchStore((state) => state.filters);
   const { candidate, open, openModal, close, loading, error } =
@@ -55,7 +56,7 @@ export function ChatMain() {
 
     try {
       const response = await searchResumes(
-        { query: trimmed, mode, limit, weights, filters },
+        { query: trimmed, mode, limit, weights, filters, generateAnswer },
         search.controller.signal,
       );
       if (activeSearch.current?.id !== search.id) return;
@@ -70,6 +71,16 @@ export function ChatMain() {
         <div className="space-y-3">
           <p className="font-semibold text-white">Search complete</p>
           <p className="text-sm text-slate-300">{summaryText}</p>
+          {response.answer ? (
+            <div className="rounded-xl border border-red-400/15 bg-red-500/[0.05] p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-red-200">
+                AI answer based on retrieved resumes
+              </p>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-200">
+                {response.answer}
+              </p>
+            </div>
+          ) : null}
           {response.warnings?.length ? (
             <p className="text-xs text-amber-200/80">{response.warnings.join(' ')}</p>
           ) : null}
