@@ -25,8 +25,13 @@ export function ChatMain() {
   const mode = useSearchStore((state) => state.mode);
   const limit = useSearchStore((state) => state.limit);
   const weights = useSearchStore((state) => state.weights);
-  const { candidate, open, openModal, close, loading, error } = useCandidateModal();
-  const activeSearch = useRef<{ id: number; controller: AbortController } | null>(null);
+  const filters = useSearchStore((state) => state.filters);
+  const { candidate, open, openModal, close, loading, error } =
+    useCandidateModal();
+  const activeSearch = useRef<{
+    id: number;
+    controller: AbortController;
+  } | null>(null);
   const nextSearchId = useRef(0);
 
   useEffect(() => () => activeSearch.current?.controller.abort(), []);
@@ -49,15 +54,25 @@ export function ChatMain() {
     setTyping(true);
 
     try {
-      const response = await searchResumes({ query: trimmed, mode, limit, weights }, search.controller.signal);
+      const response = await searchResumes(
+        { query: trimmed, mode, limit, weights, filters },
+        search.controller.signal,
+      );
       if (activeSearch.current?.id !== search.id) return;
       const nextResults: SearchResult[] = response.results.slice(0, limit);
-      const summaryText = response.message ?? (nextResults.length > 0 ? `Showing ${nextResults.length} ranked matches for “${trimmed}”.` : `No matches were found for “${trimmed}”.`);
+      const summaryText =
+        response.message ??
+        (nextResults.length > 0
+          ? `Showing ${nextResults.length} ranked matches for “${trimmed}”.${response.rerankApplied ? ' Reranked by Groq.' : ''}`
+          : `No matches were found for “${trimmed}”.`);
 
       addBotMessage(
         <div className="space-y-3">
           <p className="font-semibold text-white">Search complete</p>
           <p className="text-sm text-slate-300">{summaryText}</p>
+          {response.warnings?.length ? (
+            <p className="text-xs text-amber-200/80">{response.warnings.join(' ')}</p>
+          ) : null}
           {nextResults.length > 0 ? (
             <ResultsList
               results={nextResults}
@@ -65,20 +80,25 @@ export function ChatMain() {
               mode={mode}
               duration={response.duration}
               onOpenCandidate={(candidateId) => {
-                const selected = nextResults.find((result) => result.id === candidateId);
+                const selected = nextResults.find(
+                  (result) => result.id === candidateId,
+                );
                 void openModal(candidateId, selected);
               }}
             />
           ) : (
             <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-3 text-sm text-slate-400">
-              Try a broader query such as “backend engineer”, “full stack developer”, or “data engineer”.
+              Try a broader query such as “backend engineer”, “full stack
+              developer”, or “data engineer”.
             </div>
           )}
         </div>,
       );
     } catch (error) {
       if (activeSearch.current?.id !== search.id) return;
-      addBotMessage(`The search service is unavailable right now. ${error instanceof Error ? error.message : 'Please check the backend connection.'}`);
+      addBotMessage(
+        `The search service is unavailable right now. ${error instanceof Error ? error.message : 'Please check the backend connection.'}`,
+      );
     } finally {
       if (activeSearch.current?.id === search.id) {
         activeSearch.current = null;
@@ -88,12 +108,26 @@ export function ChatMain() {
   };
 
   return (
-    <div className="flex min-h-[70vh] w-full max-w-5xl flex-1 flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70 shadow-2xl shadow-black/25">
+    <div className="flex min-h-[640px] w-full max-w-5xl flex-1 flex-col overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0d0d0c]/95 shadow-2xl shadow-black/30 lg:min-h-[min(74vh,860px)]">
       <ChatTopbar />
       <ChatMessages />
-      {shouldShowSuggestionChips(messages) ? <SuggestionChips onSelect={(value) => void sendMessage(value)} /> : null}
-      <ChatInputBar value={draft} onChange={setDraft} onSubmit={() => void sendMessage()} disabled={!canSubmit} />
-      <CandidateModal candidate={candidate} open={open} loading={loading} error={error} mode={mode} onClose={close} />
+      {shouldShowSuggestionChips(messages) ? (
+        <SuggestionChips onSelect={(value) => void sendMessage(value)} />
+      ) : null}
+      <ChatInputBar
+        value={draft}
+        onChange={setDraft}
+        onSubmit={() => void sendMessage()}
+        disabled={!canSubmit}
+      />
+      <CandidateModal
+        candidate={candidate}
+        open={open}
+        loading={loading}
+        error={error}
+        mode={mode}
+        onClose={close}
+      />
     </div>
   );
 }

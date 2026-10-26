@@ -3,7 +3,6 @@ import { useChatStore } from '../../../lib/stores/chat.store';
 import { BotBubble } from './BotBubble';
 import { UserBubble } from './UserBubble';
 import { WelcomeMessage } from './WelcomeMessage';
-import { EmptyState } from '../../common/EmptyState';
 import { LoadingDots } from '../../common/LoadingDots';
 import { ResultCardSkeleton } from '../../common/ResultCardSkeleton';
 
@@ -14,21 +13,33 @@ export function ChatMessages() {
 
   useEffect(() => {
     if (containerRef.current) {
-      containerRef.current.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' });
+      containerRef.current.scrollTo({
+        top: containerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
     }
   }, [messages, isTyping]);
 
   return (
-    <div ref={containerRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+    <div
+      ref={containerRef}
+      className="flex-1 space-y-4 overflow-y-auto px-4 py-5 sm:px-6"
+    >
       {messages.length === 0 ? (
-        <div className="space-y-3">
-          <WelcomeMessage />
-          <EmptyState title="Start with a recruiter prompt" description="Try a query such as backend engineer, product manager, or data engineer to retrieve ranked candidates." />
-        </div>
+        <WelcomeMessage />
       ) : (
         messages.map((message) => (
-          <div key={message.id} className={message.role === 'assistant' ? 'text-left' : 'text-right'}>
-            {message.role === 'assistant' ? <BotBubble>{message.content}</BotBubble> : <UserBubble>{message.content}</UserBubble>}
+          <div
+            key={message.id}
+            className={
+              message.role === 'assistant' ? 'text-left' : 'text-right'
+            }
+          >
+            {message.role === 'assistant' ? (
+              <BotBubble>{message.content}</BotBubble>
+            ) : (
+              <UserBubble>{message.content}</UserBubble>
+            )}
           </div>
         ))
       )}
@@ -41,7 +52,9 @@ export function ChatMessages() {
             </div>
           </BotBubble>
           <div className="mx-2 space-y-2 rounded-2xl border border-white/10 bg-slate-950/50 p-3">
-            <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">Preparing result cards</p>
+            <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
+              Preparing result cards
+            </p>
             <ResultCardSkeleton />
           </div>
         </>

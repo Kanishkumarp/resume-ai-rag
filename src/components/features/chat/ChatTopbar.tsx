@@ -1,28 +1,36 @@
 import { useSearchStore } from '../../../lib/stores/search.store';
+import { BrainCircuit, Search, Sparkles } from 'lucide-react';
 
 export function ChatTopbar() {
   const mode = useSearchStore((state) => state.mode);
 
-  const modeLabel = mode === 'bm25' ? 'BM25 • Keyword relevance' : mode === 'vector' ? 'Vector • Semantic similarity' : 'Hybrid • Balanced ranking';
-  const badgeClasses = mode === 'bm25' ? 'bg-pink-500/20 text-pink-300' : mode === 'vector' ? 'bg-indigo-500/20 text-indigo-300' : 'bg-emerald-500/20 text-emerald-300';
+  const modeLabel =
+    mode === 'bm25'
+      ? 'Keyword retrieval'
+      : mode === 'vector'
+        ? 'Semantic retrieval'
+        : 'Hybrid retrieval';
+  const ModeIcon =
+    mode === 'bm25' ? Search : mode === 'vector' ? BrainCircuit : Sparkles;
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
-      <div className="flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white">R</div>
-        <div>
-          <p className="text-sm font-semibold text-white">RecruitBot assistant</p>
-          <p className="text-xs text-slate-400">{modeLabel}</p>
+    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4 sm:px-6">
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+          Candidate discovery
+        </p>
+        <div className="mt-1.5 flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-white">Search resumes</h2>
+          <span className="hidden text-slate-700 sm:inline">/</span>
+          <p className="hidden text-xs text-slate-400 sm:block">{modeLabel}</p>
         </div>
       </div>
-      <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-slate-500">
-        <span>Workspace</span>
-        <span>/</span>
-        <span>Search</span>
-        <span>/</span>
-        <span className="text-slate-300">{mode === 'bm25' ? 'BM25' : mode === 'vector' ? 'Vector' : 'Hybrid'}</span>
+      <div className="flex items-center gap-2 rounded-full border border-red-400/15 bg-red-500/[0.07] px-3 py-1.5 text-xs font-medium text-red-200">
+        <ModeIcon size={14} />
+        <span>
+          {mode === 'bm25' ? 'BM25' : mode === 'vector' ? 'Vector' : 'Hybrid'}
+        </span>
       </div>
-      <span className={`rounded-full px-2.5 py-1 text-xs ${badgeClasses}`}>{mode === 'bm25' ? 'BM25' : mode === 'vector' ? 'Vector' : 'Hybrid'}</span>
     </div>
   );
 }

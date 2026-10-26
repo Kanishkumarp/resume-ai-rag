@@ -25,6 +25,10 @@ export interface SearchCandidate {
   name?: string;
   company?: string;
   role?: string;
+  location?: string;
+  skills?: string[];
+  experienceYears?: number;
+  education?: string;
   snippet: string;
   score: number;
   source: 'bm25' | 'vector' | 'hybrid';
@@ -33,7 +37,12 @@ export interface SearchCandidate {
   summary?: string;
   bm25Score?: number;
   vectorScore?: number;
+  bm25RawScore?: number;
+  vectorRawScore?: number;
   hybridScore?: number;
+  rerankScore?: number;
+  relevanceExplanation?: string;
+  evidence?: string[];
 }
 
 export interface HybridSearchResponse {
@@ -45,5 +54,7 @@ export interface HybridSearchResponse {
   index: { name: string; dimensions: number; similarity: 'cosine' };
   vectorFallback: boolean;
   bm25Fallback: boolean;
-  timings: { bm25Ms: number; vectorMs: number };
+  hybridResults?: SearchCandidate[];
+  timings: { bm25Ms: number; vectorMs: number; rerankMs?: number };
+  rerankApplied?: boolean;
 }

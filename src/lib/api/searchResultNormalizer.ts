@@ -22,7 +22,14 @@ type BackendCandidate = {
   phoneNumber?: string;
   bm25Score?: number;
   vectorScore?: number;
+  bm25RawScore?: number;
+  vectorRawScore?: number;
   hybridScore?: number;
+  rerankScore?: number;
+  relevanceExplanation?: string;
+  evidence?: string[];
+  experienceYears?: number;
+  education?: string;
 };
 
 const normalizeSkill = (value: string) => value.trim().replace(/^[•·-]\s*/, '').replace(/\s+/g, ' ');
@@ -80,7 +87,14 @@ export const normalizeCandidate = (candidate: unknown): SearchResult => {
     phone: metadata.phone,
     bm25Score: typeof item.bm25Score === 'number' ? item.bm25Score : undefined,
     vectorScore: typeof item.vectorScore === 'number' ? item.vectorScore : undefined,
+    bm25RawScore: typeof item.bm25RawScore === 'number' ? item.bm25RawScore : undefined,
+    vectorRawScore: typeof item.vectorRawScore === 'number' ? item.vectorRawScore : undefined,
     hybridScore: typeof item.hybridScore === 'number' ? item.hybridScore : undefined,
+    rerankScore: typeof item.rerankScore === 'number' ? item.rerankScore : undefined,
+    relevanceExplanation: typeof item.relevanceExplanation === 'string' ? item.relevanceExplanation : undefined,
+    evidence: Array.isArray(item.evidence) ? item.evidence.filter((quote): quote is string => typeof quote === 'string') : undefined,
+    experienceYears: typeof item.experienceYears === 'number' ? item.experienceYears : undefined,
+    educationSummary: typeof item.education === 'string' ? item.education : undefined,
   };
 };
 

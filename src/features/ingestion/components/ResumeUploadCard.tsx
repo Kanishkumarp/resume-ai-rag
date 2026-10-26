@@ -6,12 +6,18 @@ import { IngestionStepIndicator } from './IngestionStepIndicator';
 import { UploadButton } from './UploadButton';
 import { UploadDropzone } from './UploadDropzone';
 import { UploadProgress } from './UploadProgress';
+import { FileUp } from 'lucide-react';
 
 interface ResumeUploadCardProps {
   onUpload?: (file: File, fileName?: string) => Promise<void> | void;
+  variant?: 'default' | 'compact';
 }
 
-export function ResumeUploadCard({ onUpload }: ResumeUploadCardProps) {
+export function ResumeUploadCard({
+  onUpload,
+  variant = 'default',
+}: ResumeUploadCardProps) {
+  const compact = variant === 'compact';
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const status = useIngestionStore((state) => state.status);
   const progress = useIngestionStore((state) => state.progress);
@@ -28,7 +34,8 @@ export function ResumeUploadCard({ onUpload }: ResumeUploadCardProps) {
 
   const validateFile = (file: File) => {
     const normalizedName = (file.name || '').toLowerCase();
-    const looksLikePdf = file.type.includes('pdf') || normalizedName.endsWith('.pdf');
+    const looksLikePdf =
+      file.type.includes('pdf') || normalizedName.endsWith('.pdf');
 
     if (!looksLikePdf) {
       return 'Only PDF allowed';
@@ -90,7 +97,9 @@ export function ResumeUploadCard({ onUpload }: ResumeUploadCardProps) {
       setStatus('error');
       setProgress(0);
       setStepIndex(0);
-      setError(uploadError instanceof Error ? uploadError.message : 'Network error');
+      setError(
+        uploadError instanceof Error ? uploadError.message : 'Network error',
+      );
     }
   };
 
@@ -103,15 +112,43 @@ export function ResumeUploadCard({ onUpload }: ResumeUploadCardProps) {
   }, [error, status]);
 
   return (
-    <div className="w-full max-w-xl rounded-2xl border border-white/[0.07] bg-bg-card p-6 shadow-lg shadow-black/20">
-      <div className="mb-5">
-        <h2 className="text-lg font-semibold text-text-primary">Resume Ingestion</h2>
-        <p className="mt-1 text-sm text-text-muted">Upload a PDF resume and begin ingestion.</p>
+    <div
+      className={`w-full rounded-2xl border border-white/[0.07] bg-white/[0.025] shadow-lg shadow-black/20 ${compact ? 'p-3.5' : 'max-w-xl p-6'}`}
+    >
+      <div className={compact ? 'mb-3' : 'mb-5'}>
+        {compact ? (
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-red-400/15 bg-red-500/[0.07] text-red-300">
+              <FileUp size={15} />
+            </span>
+            <div>
+              <h2 className="text-xs font-semibold text-white">Add resumes</h2>
+              <p className="mt-0.5 text-[10px] text-slate-500">
+                PDF format · up to 5 MB
+              </p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <h2 className="text-lg font-semibold text-text-primary">
+              Resume Ingestion
+            </h2>
+            <p className="mt-1 text-sm text-text-muted">
+              Upload a PDF resume and begin ingestion.
+            </p>
+          </>
+        )}
       </div>
 
-      <UploadDropzone onFileSelect={handleFileSelect} isUploading={status === 'uploading'} error={error} status={status} />
+      <UploadDropzone
+        onFileSelect={handleFileSelect}
+        isUploading={status === 'uploading'}
+        error={error}
+        status={status}
+        compact={compact}
+      />
 
-      <div className="mt-4">
+      <div className={compact ? 'mt-2' : 'mt-4'}>
         <UploadButton
           onClick={() => {
             if (selectedFile) {
@@ -119,33 +156,46 @@ export function ResumeUploadCard({ onUpload }: ResumeUploadCardProps) {
             }
           }}
           disabled={!selectedFile || status === 'uploading'}
-          label={status === 'uploading' ? 'Uploading...' : status === 'error' ? 'Retry Upload' : 'Upload Resume'}
+          label={
+            status === 'uploading'
+              ? 'Uploading...'
+              : status === 'error'
+                ? 'Retry Upload'
+                : 'Upload Resume'
+          }
         />
       </div>
 
-      <div className="mt-4">
-        <UploadProgress progress={progress} status={status} message={helperText} />
+      <div className={compact ? 'mt-3' : 'mt-4'}>
+        <UploadProgress
+          progress={progress}
+          status={status}
+          message={helperText}
+          compact={compact}
+        />
       </div>
 
-      <div className="mt-4">
-        <IngestionStepIndicator currentStep={stepIndex} />
-      </div>
+      {!compact ? (
+        <div className="mt-4">
+          <IngestionStepIndicator currentStep={stepIndex} />
+        </div>
+      ) : null}
 
-      <div className="mt-4 flex gap-2">
+      <div className={`${compact ? 'mt-2' : 'mt-4'} flex gap-2`}>
         <button
           type="button"
           onClick={() => {
             setSelectedFile(null);
             reset();
           }}
-          className="rounded-lg border border-white/[0.07] bg-bg-surface px-3 py-2 text-sm text-text-muted"
+          className="rounded-lg border border-white/[0.07] bg-bg-surface px-3 py-2 text-xs text-text-muted transition hover:border-red-400/20 hover:text-white"
         >
           Reset
         </button>
       </div>
 
       {status === 'success' && (
-        <div className="mt-4">
+        <div className={compact ? 'mt-3' : 'mt-4'}>
           <IngestionResultScreen fileName={fileName} />
         </div>
       )}

@@ -8,7 +8,7 @@ export function ClearChatButton() {
     <button
       type="button"
       onClick={() => clearMessages()}
-      className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-slate-950/70 px-3 py-2 text-sm text-slate-300 transition hover:border-indigo-400/20 hover:text-white"
+      className="flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.025] px-3 py-2.5 text-xs font-medium text-slate-400 transition hover:border-red-400/25 hover:text-white"
     >
       <Trash2 className="h-4 w-4" />
       Clear chat

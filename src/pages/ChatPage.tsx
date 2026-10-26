@@ -4,6 +4,7 @@ import { Sidebar } from '../components/layout/Sidebar';
 import { ChatMain } from '../components/features/chat/ChatMain';
 import { WorkspaceStatsBar } from '../components/common/WorkspaceStatsBar';
 import { CommandPalette } from '../components/common/CommandPalette';
+import { Flame, Sparkles } from 'lucide-react';
 
 export function ChatPage() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
@@ -26,31 +27,46 @@ export function ChatPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-1 flex-col gap-4 py-2">
-        <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4 shadow-2xl shadow-black/25">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-1 flex-col gap-6">
+        <header className="flex flex-col gap-5 border-b border-white/[0.08] pb-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-red-400/20 bg-red-500/[0.09] text-red-300 shadow-lg shadow-red-950/20">
+              <Flame size={22} strokeWidth={1.8} />
+            </div>
             <div>
-              <div className="mb-2 flex items-center gap-2 text-[11px] uppercase tracking-[0.35em] text-slate-500">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                Workspace / Search / RecruitBot
-              </div>
-              <h1 className="text-xl font-semibold text-white">RecruitBot workspace</h1>
-              <p className="mt-1 text-sm text-slate-400">Search uploaded resumes with BM25, vector, or hybrid retrieval.</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+                RecruitBot · Talent intelligence
+              </p>
+              <h1 className="mt-1 text-lg font-semibold tracking-tight text-white sm:text-xl">
+                Resume search workspace
+              </h1>
             </div>
           </div>
-          <div className="mt-4">
-            <WorkspaceStatsBar />
+          <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/10 bg-white/[0.035] px-3.5 py-2 text-xs font-medium text-slate-300 sm:self-auto">
+            <Sparkles size={14} className="text-red-300" /> RAG-powered search
           </div>
+        </header>
+
+        <section aria-label="Workspace statistics">
+          <WorkspaceStatsBar />
+        </section>
+
+        <div className="grid flex-1 grid-cols-1 items-start gap-5 lg:min-h-0 lg:grid-cols-[300px_minmax(0,1fr)]">
+          <Sidebar />
+          <main className="flex min-w-0 justify-center lg:min-h-0">
+            <ChatMain />
+          </main>
         </div>
 
-        <div className="flex flex-1 flex-col gap-4 lg:flex-row">
-          <Sidebar />
-          <div className="flex min-w-0 flex-1 justify-center">
-            <ChatMain />
-          </div>
-        </div>
+        <footer className="flex flex-col items-center justify-between gap-2 border-t border-white/[0.06] pt-4 text-[11px] text-slate-600 sm:flex-row">
+          <span>RecruitBot · Resume intelligence workspace</span>
+          <span>Keyword, semantic, and hybrid retrieval</span>
+        </footer>
       </div>
-      <CommandPalette open={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} />
+      <CommandPalette
+        open={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+      />
     </AppShell>
   );
 }

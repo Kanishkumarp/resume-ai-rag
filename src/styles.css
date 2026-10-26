@@ -6,24 +6,35 @@
 
 :root {
   color-scheme: dark;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --dragon-background: #000000;
-  --dragon-background-secondary: #910000;
-  --dragon-text: #f2f2f2;
-  --dragon-red: #f82d2d;
-  --dragon-selection: #ff0000;
-  --dragon-orange: #f8762a;
-  --dragon-yellow: #ffc93b;
-  --dragon-green: #26f894;
-  --dragon-blue: #3394f6;
-  --dragon-purple: #6834f8;
-  --dragon-magenta: #f839b6;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  --dragon-background: #090909;
+  --dragon-background-secondary: #120b0a;
+  --dragon-text: #f5f4f2;
+  --dragon-red: #f04438;
+  --dragon-selection: #f04438;
+  --dragon-orange: #fb923c;
+  --dragon-yellow: #fbbf24;
+  --dragon-green: #34d399;
+  --dragon-blue: #60a5fa;
+  --dragon-purple: #a78bfa;
+  --dragon-magenta: #f472b6;
   background-color: var(--dragon-background);
   color: var(--dragon-text);
 }
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  scrollbar-color: #34302e #111110;
+  scrollbar-width: thin;
 }
 
 html,
@@ -40,8 +51,7 @@ body,
 
 body {
   min-height: 100vh;
-  background: radial-gradient(circle at top left, rgba(248, 45, 45, 0.22), transparent 35%),
-    linear-gradient(135deg, var(--dragon-background) 0%, var(--dragon-background-secondary) 100%);
+  background: #090909;
   color: var(--dragon-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -55,13 +65,43 @@ textarea {
 }
 
 ::selection {
-  background: rgba(255, 0, 0, 0.35);
+  background: rgba(240, 68, 56, 0.35);
   color: #fff;
 }
 
 .dragon-fire-shell {
-  background: radial-gradient(circle at top, rgba(248, 45, 45, 0.2), transparent 38%),
-    linear-gradient(135deg, var(--dragon-background) 0%, #210000 65%, var(--dragon-background-secondary) 100%);
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(
+      ellipse at 6% 0%,
+      rgba(147, 34, 26, 0.14),
+      transparent 31rem
+    ),
+    radial-gradient(
+      ellipse at 95% 45%,
+      rgba(117, 28, 20, 0.07),
+      transparent 36rem
+    ),
+    linear-gradient(180deg, #0a0a09 0%, #090909 50%, #0b0908 100%);
+}
+
+.dragon-fire-shell::before {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, black, transparent 70%);
+  content: '';
+}
+
+:focus-visible {
+  outline: 2px solid rgba(240, 68, 56, 0.7);
+  outline-offset: 3px;
 }
 
 .dragon-fire-shell .text-indigo-300,
@@ -72,7 +112,7 @@ textarea {
 .dragon-fire-shell .bg-indigo-500\/10,
 .dragon-fire-shell .bg-indigo-500\/15,
 .dragon-fire-shell .bg-indigo-500\/20 {
-  background-color: rgba(248, 45, 45, 0.14);
+  background-color: rgba(240, 68, 56, 0.12);
 }
 
 .dragon-fire-shell .bg-indigo-500 {
@@ -81,7 +121,21 @@ textarea {
 
 .dragon-fire-shell .border-indigo-400\/20,
 .dragon-fire-shell .border-indigo-400\/30 {
-  border-color: rgba(248, 45, 45, 0.45);
+  border-color: rgba(240, 68, 56, 0.32);
+}
+
+.dragon-fire-shell .from-indigo-500 {
+  --tw-gradient-from: #e23e34 var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(226 62 52 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.dragon-fire-shell .to-pink-500 {
+  --tw-gradient-to: #a93028 var(--tw-gradient-to-position);
+}
+
+.dragon-fire-shell .accent-indigo-400 {
+  accent-color: var(--dragon-red);
 }
 
 .dragon-fire-shell .text-emerald-300 {
@@ -111,4 +165,15 @@ textarea {
 .dragon-fire-shell .text-pink-300,
 .dragon-fire-shell .text-pink-400 {
   color: var(--dragon-magenta);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
