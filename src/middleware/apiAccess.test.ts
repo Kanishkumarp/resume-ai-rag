@@ -2,57 +2,135 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { Request, Response } from 'express';
 import { env } from '../config/environment';
-import { requireApiAccessToken } from './apiAccess';
+import { createApiAccessHandlers } from './apiAccess';
+import type { ApiAccessRepository } from '../repositories/apiAccessRepository';
 
-const invokeMiddleware = (authorization?: string) => {
-  let statusCode = 200;
-  let body: unknown;
-  let nextCalled = false;
-  const req = {
-    get: (name: string) => name === 'authorization' ? authorization : undefined,
-  } as unknown as Request;
-  const res = {
-    status: (code: number) => {
-      statusCode = code;
-      return res;
-    },
-    json: (payload: unknown) => {
-      body = payload;
-      return res;
-    },
-  } as unknown as Response;
+const configuredToken = 'test-access-token-for-security-tests-123456';
 
-  requireApiAccessToken(req, res, () => {
-    nextCalled = true;
-  });
+const makeHarness = (repository: ApiAccessRepository) => {
+  const handlers = createApiAccessHandlers(repository);
+  const call = async (
+    handler: typeof handlers.createSession,
+    options: { body?: unknown; cookie?: string } = {},
+  ) => {
+    let statusCode = 200;
+    let body: unknown;
+    let sessionCookie: { name: string; value: string; options: unknown } | undefined;
+    let clearedCookie: { name: string; options: unknown } | undefined;
+    let ended = false;
+    let nextError: unknown;
+    const req = {
+      body: options.body,
+      get: (name: string) =>
+        name.toLowerCase() === 'cookie' ? options.cookie : undefined,
+    } as unknown as Request;
+    const res = {
+      status: (code: number) => {
+        statusCode = code;
+        return res;
+      },
+      json: (payload: unknown) => {
+        body = payload;
+        return res;
+      },
+      cookie: (name: string, value: string, cookieOptions: unknown) => {
+        sessionCookie = { name, value, options: cookieOptions };
+        return res;
+      },
+      clearCookie: (name: string, cookieOptions: unknown) => {
+        clearedCookie = { name, options: cookieOptions };
+        return res;
+      },
+      end: () => {
+        ended = true;
+        return res;
+      },
+    } as unknown as Response;
 
-  return { statusCode, body, nextCalled };
+    await handler(req, res, (error?: unknown) => {
+      nextError = error;
+    });
+    return { statusCode, body, sessionCookie, clearedCookie, ended, nextError };
+  };
+
+  return { ...handlers, call };
 };
 
-test('API access requires a configured, matching bearer token', async (t) => {
+test('the configured access token can only bootstrap one durable session', async (t) => {
   const previousToken = env.apiAccessToken;
-  const testToken = 'test-access-token-for-security-tests-123456';
+  env.apiAccessToken = configuredToken;
 
   try {
-    await t.test('fails closed when no token is configured', () => {
-      env.apiAccessToken = '';
-      const result = invokeMiddleware(`Bearer ${testToken}`);
-      assert.equal(result.statusCode, 503);
-      assert.equal(result.nextCalled, false);
+    const consumedTokens = new Set<string>();
+    const sessions = new Map<string, Date>();
+    const repository: ApiAccessRepository = {
+      consumeAccessToken: async (tokenHash, sessionHash, expiresAt) => {
+        if (consumedTokens.has(tokenHash)) {
+          return false;
+        }
+        consumedTokens.add(tokenHash);
+        sessions.set(sessionHash, expiresAt);
+        return true;
+      },
+      hasActiveSession: async (sessionHash, now) => {
+        const expiresAt = sessions.get(sessionHash);
+        return Boolean(expiresAt && expiresAt > now);
+      },
+    };
+    const { createSession, requireApiAccessToken, call } = makeHarness(repository);
+
+    await t.test('rejects missing and invalid bootstrap credentials', async () => {
+      assert.equal((await call(createSession)).statusCode, 401);
+      assert.equal((await call(createSession, { body: { accessToken: 'wrong-token' } })).statusCode, 401);
     });
 
-    await t.test('rejects missing or invalid tokens', () => {
-      env.apiAccessToken = testToken;
-      assert.equal(invokeMiddleware().statusCode, 401);
-      assert.equal(invokeMiddleware('Bearer wrong-access-token-for-security-tests').statusCode, 401);
-      assert.equal(invokeMiddleware(testToken).statusCode, 401);
+    await t.test('sets a secure session cookie and does not expose the token', async () => {
+      const result = await call(createSession, {
+        body: { accessToken: configuredToken },
+      });
+      assert.equal(result.statusCode, 204);
+      assert.equal(result.ended, true);
+      assert.equal(result.sessionCookie?.name, 'resume_session');
+      assert.notEqual(result.sessionCookie?.value, configuredToken);
+      assert.deepEqual(result.sessionCookie?.options, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'strict',
+        path: '/v1',
+        maxAge: 12 * 60 * 60 * 1000,
+      });
+
+      const request = await call(requireApiAccessToken, {
+        cookie: `resume_session=${result.sessionCookie?.value}`,
+      });
+      assert.equal(request.nextError, undefined);
+      assert.equal(request.statusCode, 200);
+
+      const existingSession = await call(createSession, {
+        cookie: `resume_session=${result.sessionCookie?.value}`,
+      });
+      assert.equal(existingSession.statusCode, 204);
+      assert.equal(existingSession.sessionCookie, undefined);
     });
 
-    await t.test('accepts the configured bearer token', () => {
-      env.apiAccessToken = testToken;
-      const result = invokeMiddleware(`Bearer ${testToken}`);
-      assert.equal(result.statusCode, 200);
-      assert.equal(result.nextCalled, true);
+    await t.test('rejects replay even when a new handler instance is created', async () => {
+      const result = await makeHarness(repository).call(createSession, {
+        body: { accessToken: configuredToken },
+      });
+      assert.equal(result.statusCode, 401);
+      assert.equal(
+        (result.body as { message: string }).message,
+        'This access token has already been used. Configure a new API_ACCESS_TOKEN.',
+      );
+    });
+
+    await t.test('rejects missing sessions on protected requests', async () => {
+      const result = await call(requireApiAccessToken);
+      assert.equal(result.statusCode, 401);
+      assert.deepEqual(result.clearedCookie, {
+        name: 'resume_session',
+        options: { path: '/v1' },
+      });
     });
   } finally {
     env.apiAccessToken = previousToken;

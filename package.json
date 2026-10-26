@@ -10,7 +10,7 @@
     "build": "npm run frontend:build && npm run build:backend",
     "build:backend": "tsc -p tsconfig.backend.json",
     "start": "node dist/backend/src/server.js",
-    "bootstrap:resumes": "ts-node src/scripts/bootstrapResumes.ts",
+    "bootstrap:resumes": "ts-node --project tsconfig.backend.json scripts/backend/bootstrapResumes.ts",
     "lint": "npm run typecheck",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "test": "node scripts/run-tests.cjs",
@@ -19,6 +19,9 @@
     "dev:frontend": "npm run frontend",
     "frontend:build": "vite build",
     "frontend:preview": "vite preview --host 0.0.0.0 --port 4173"
+  },
+  "overrides": {
+    "postcss-selector-parser": "^7.1.7"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

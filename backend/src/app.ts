@@ -4,6 +4,7 @@ import { env } from './config/environment';
 import { requestIdMiddleware } from './middleware/requestContext';
 import { errorHandler } from './middleware/errorHandler';
 import { loggingMiddleware } from './middleware/logging';
+import authRoutes from '../../src/routes/authRoutes';
 import healthRoutes from '../../src/routes/healthRoutes';
 import embeddingRoutes from '../../src/routes/embeddingRoutes';
 import searchRoutes from '../../src/routes/searchRoutes';
@@ -22,6 +23,7 @@ export const createApp = (): Express => {
   });
 
   app.use('/v1', healthRoutes);
+  app.use('/v1', authRoutes);
   app.use('/v1', embeddingRoutes);
   app.use('/v1', searchRoutes);
   app.use('/v1', retrievalRoutes);

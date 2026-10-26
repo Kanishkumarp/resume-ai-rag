@@ -13,7 +13,9 @@ void mongoConnection.connect()
   .then(() => {
     console.log('✅ Connected to MongoDB Atlas');
   })
-  .catch((err) => {
+  .catch((error: unknown) => {
     console.error('❌ MongoDB connection failed');
-    console.error(err);
+    console.error(JSON.stringify({
+      errorType: error instanceof Error ? error.name : 'UnknownError',
+    }));
   });

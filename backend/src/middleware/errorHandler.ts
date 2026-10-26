@@ -14,9 +14,20 @@ export const errorHandler = (
   const statusCode = isPayloadTooLarge ? 413 : isBadRequest ? 400 : 500;
   const errorCode = isPayloadTooLarge ? 'payload_too_large' : isBadRequest ? 'invalid_json' : 'internal_server_error';
 
-  const message = typeof err === 'object' && err !== null && 'message' in err && typeof (err as { message?: unknown }).message === 'string'
-    ? (err as { message: string }).message
-    : 'Unexpected error';
+  const errorType = err instanceof Error ? err.name : 'UnknownError';
+  const message = statusCode === 500
+    ? 'An unexpected error occurred.'
+    : typeof err === 'object' && err !== null && 'message' in err && typeof (err as { message?: unknown }).message === 'string'
+      ? (err as { message: string }).message
+      : 'Unexpected error';
+
+  if (statusCode === 500) {
+    console.error(JSON.stringify({
+      requestId: requestId ?? undefined,
+      error: errorCode,
+      errorType,
+    }));
+  }
 
   const response: ErrorResponse = {
     error: errorCode,

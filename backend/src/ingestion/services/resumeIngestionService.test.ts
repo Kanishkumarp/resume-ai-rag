@@ -10,7 +10,7 @@ test('ingestResume parses and stores a resume without external dependencies', as
       'John Doe',
       'Senior Backend Engineer',
       'john.doe@example.com',
-      '+91 9876543210',
+      '+91 7000000000',
       'Bengaluru',
       'TCS',
       'Worked on Java, Node.js, MongoDB, and TypeScript for 3 years.',
@@ -20,7 +20,7 @@ test('ingestResume parses and stores a resume without external dependencies', as
   assert.ok(result.id, 'Expected the ingestion service to return a document id');
   assert.equal(result.parsed.name, 'John Doe');
   assert.equal(result.parsed.email, 'john.doe@example.com');
-  assert.equal(result.parsed.phone, '+91 9876543210');
+  assert.equal(result.parsed.phone, '+91 7000000000');
   assert.equal(result.parsed.location, 'Bengaluru');
   assert.equal(result.parsed.company, 'TCS');
   assert.equal(result.parsed.role, 'Senior Backend Engineer');

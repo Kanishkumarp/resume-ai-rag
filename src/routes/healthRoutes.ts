@@ -30,7 +30,7 @@ router.get('/health/db', async (_req, res) => {
     const errorMessage = result.ok
       ? undefined
       : configured
-        ? `MongoDB unavailable for the configured environment values: ${result.error ?? 'Unknown database error'}`
+        ? 'MongoDB is unavailable for the configured environment.'
         : 'MongoDB is not configured for the provided environment values.';
 
     const response: HealthResponse = {
@@ -49,8 +49,7 @@ router.get('/health/db', async (_req, res) => {
     };
 
     res.status(200).json(response);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Database check failed';
+  } catch {
     const response: HealthResponse = {
       status: 'ok',
       app: env.appName,
@@ -60,7 +59,7 @@ router.get('/health/db', async (_req, res) => {
       checks: {
         database: {
           status: 'degraded',
-          error: `MongoDB unavailable for the configured environment values: ${message}`,
+          error: 'MongoDB is unavailable for the configured environment.',
         },
       },
     };

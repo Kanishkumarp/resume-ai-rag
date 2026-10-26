@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getSearchEndpoint, normalizeResults } from '../../../src/lib/api/search.api';
+import { getSearchEndpoint, normalizeResults } from '../../../frontend/app/src/lib/api/search.api';
 import { VectorSearchService } from './search/vectorSearchService';
 import { SearchService } from './searchService';
 

@@ -2,10 +2,14 @@
 
 This folder contains the server-side application for ingestion and retrieval.
 
-Configure `API_ACCESS_TOKEN` in the backend environment before using search,
-candidate profiles, or resume ingestion. These routes require an
-`Authorization: Bearer <API_ACCESS_TOKEN>` header. Keep the token on the
-server and out of frontend build variables.
+Configure a unique, high-entropy `API_ACCESS_TOKEN` (at least 32 characters) in
+the backend environment before using search, candidate profiles, embeddings, or
+resume ingestion. The browser submits this token once to `/v1/auth/session`;
+the backend records only its hash in MongoDB and issues an HttpOnly session
+cookie. Protected requests use that cookie instead of resending the access
+token. The session lasts 12 hours and remains valid across backend restarts.
+After a token has been used, it cannot be reused; configure a new token to
+establish another session, then restart the backend to load it.
 
 ## Structure
 
@@ -15,8 +19,11 @@ server and out of frontend build variables.
 ## Search and environment
 
 Copy the root `.env.example` to `.env` and set `MONGODB_URI`,
-`MONGODB_DB_NAME`, and a private `API_ACCESS_TOKEN`. Keep all credentials on
-the server; do not use `VITE_` variables for secrets.
+`MONGODB_DB_NAME`, `MONGODB_COLLECTION_NAME`, and a private `API_ACCESS_TOKEN`.
+MongoDB must be available for one-time-token tracking and session validation.
+Keep all credentials on the server; do not use `VITE_` variables for secrets.
+If an earlier token was committed or otherwise exposed, rotate it; clearing the
+example file does not remove credentials from Git history.
 
 `MISTRAL_API_KEY` enables Mistral embedding generation. `GROQ_API_KEY` enables
 LLM reranking after hybrid retrieval; if it is absent or the request fails,

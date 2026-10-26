@@ -31,3 +31,28 @@ test('errorHandler returns 413 for oversized payload errors', () => {
     requestId: 'req-1',
   });
 });
+
+test('errorHandler does not expose internal error messages', () => {
+  const res = new MockResponse() as any;
+  const req = { get: () => 'req-2' } as any;
+  const originalError = console.error;
+  const logged: string[] = [];
+  console.error = (entry?: unknown) => logged.push(String(entry));
+
+  try {
+    errorHandler(new Error('database connection contains private credentials'), req, res, () => undefined);
+
+    assert.equal(res.statusCode, 500);
+    assert.deepEqual(res.body, {
+      error: 'internal_server_error',
+      message: 'An unexpected error occurred.',
+      statusCode: 500,
+      requestId: 'req-2',
+    });
+    assert.equal(JSON.stringify(res.body).includes('private credentials'), false);
+    assert.equal(logged.length, 1);
+    assert.equal(logged[0]?.includes('private credentials'), false);
+  } finally {
+    console.error = originalError;
+  }
+});

@@ -8,7 +8,7 @@ export const loggingMiddleware = (req: Request, res: Response, next: NextFunctio
     const componentTimings = (res.locals as Record<string, unknown>).componentTimings as Record<string, number> | undefined;
     const logEntry = {
       requestId,
-      endpoint: req.originalUrl,
+      endpoint: req.path,
       method: req.method,
       statusCode: res.statusCode,
       durationMs: Date.now() - startedAt,

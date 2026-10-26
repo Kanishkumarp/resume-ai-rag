@@ -16,6 +16,7 @@
   },
   "include": [
     "backend/src/**/*.ts",
+    "scripts/backend/**/*.ts",
     "src/config/**/*.ts",
     "src/ingestion/**/*.ts",
     "src/middleware/**/*.ts",

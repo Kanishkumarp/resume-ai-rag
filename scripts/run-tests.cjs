@@ -3,7 +3,11 @@ const fs = require('node:fs');
 const { spawnSync } = require('node:child_process');
 
 const workspaceRoot = path.resolve(__dirname, '..');
-const testRoots = [path.join(workspaceRoot, 'src'), path.join(workspaceRoot, 'backend', 'src')];
+const testRoots = [
+  path.join(workspaceRoot, 'frontend', 'app', 'src'),
+  path.join(workspaceRoot, 'src'),
+  path.join(workspaceRoot, 'backend', 'src'),
+];
 const testFiles = [];
 
 function walk(dir) {

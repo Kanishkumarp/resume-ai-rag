@@ -5,11 +5,11 @@ import { ResumeParserService } from './resumeParserService';
 test('parseResume extracts common resume fields from plain text', () => {
   const parser = new ResumeParserService();
   const sample = `
-  ASHWIN P
+  Example Candidate
   QA Engineer
-  ashwin@gmail.com
-  +91 9876543210
-  Chennai, India
+  candidate@example.invalid
+  +91 7000000000
+  Chennai, Tamil Nadu
   TCS
   B.E Computer Science
   3.3 years
@@ -18,9 +18,9 @@ test('parseResume extracts common resume fields from plain text', () => {
 
   const result = parser.parseResume(sample);
 
-  assert.equal(result.name, 'ASHWIN P');
-  assert.equal(result.email, 'ashwin@gmail.com');
-  assert.equal(result.phone, '+91 9876543210');
+  assert.equal(result.name, 'Example Candidate');
+  assert.equal(result.email, 'candidate@example.invalid');
+  assert.equal(result.phone, '+91 7000000000');
   assert.equal(result.location, 'Chennai');
   assert.deepEqual(result.skills, ['Java', 'Selenium', 'Playwright']);
   assert.equal(result.company, 'TCS');
